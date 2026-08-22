@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIMPUL — Simulasi Friksi Pasar dan Pencocokan Permintaan Pangan Sulawesi Tenggara</title>
+<meta name="description" content="Alat simulasi untuk mendiagnosis friksi pasar pangan dan merancang alokasi pengadaan Program Makan Bergizi Gratis di Sulawesi Tenggara.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SIMPUL — sistem rupa
+   Rujukan visual: peta laut cetak. Kertas peta pucat kebiruan,
+   garis kontur kedalaman, tinta laut dalam, penanda merah bata
+   untuk bahaya pelayaran, oker untuk daratan. Pilihan ini diambil
+   karena pokok bahasannya adalah perpindahan barang lintas laut
+   di provinsi kepulauan.
+   ============================================================ */
+:root{
+  --kertas:#EDF1EF;      /* kertas peta */
+  --kertas2:#E1E8E5;     /* bidang tenggelam */
+  --kertas3:#F6F8F7;     /* kartu terangkat */
+  --tinta:#0E242B;       /* tinta laut dalam */
+  --tinta2:#3D5A61;      /* tinta pudar */
+  --tinta3:#7C9299;      /* keterangan */
+  --laut:#14555F;        /* kontur laut */
+  --dangkal:#79ADAB;     /* perairan dangkal */
+  --karang:#AE4429;      /* penanda bahaya */
+  --pasir:#B08A21;       /* daratan */
+  --garis:#C3D0CC;       /* garis hairline */
+  --garis2:#A9BBB6;
+
+  --display:"IBM Plex Sans Condensed",-apple-system,"Segoe UI Semibold",sans-serif;
+  --teks:"Spectral",Georgia,"Times New Roman",serif;
+  --angka:"IBM Plex Mono",ui-monospace,"SF Mono",Consolas,monospace;
+
+  --r:3px;
+  --bayang:0 1px 0 var(--garis), 0 2px 10px rgba(14,36,43,.05);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--kertas); color:var(--tinta);
+  font-family:var(--teks); font-size:15.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 47px, rgba(20,85,95,.045) 47px 48px),
+    repeating-linear-gradient(90deg, transparent 0 47px, rgba(20,85,95,.032) 47px 48px);
+}
+/* garis kontur kedalaman yang sangat samar di latar */
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 12% 18%, transparent 39%, rgba(20,85,95,.07) 39.4%, transparent 40%),
+    radial-gradient(ellipse 70% 45% at 12% 18%, transparent 55%, rgba(20,85,95,.055) 55.4%, transparent 56%),
+    radial-gradient(ellipse 60% 55% at 88% 72%, transparent 44%, rgba(20,85,95,.06) 44.4%, transparent 45%),
+    radial-gradient(ellipse 60% 55% at 88% 72%, transparent 62%, rgba(20,85,95,.045) 62.4%, transparent 63%);
+}
+.bungkus{position:relative; z-index:1; max-width:1320px; margin:0 auto; padding:0 22px 90px}
+
+/* ---------- kepala ---------- */
+header{padding:46px 0 26px; border-bottom:1.5px solid var(--tinta)}
+.eyebrow{
+  font-family:var(--display); font-size:11.5px; font-weight:600;
+  letter-spacing:.19em; text-transform:uppercase; color:var(--laut);
+  display:flex; gap:12px; align-items:baseline; flex-wrap:wrap;
+}
+.eyebrow span:not(:last-child)::after{content:" ·"; color:var(--garis2); margin-left:12px}
+h1{
+  font-family:var(--display); font-weight:700; letter-spacing:-.012em;
+  font-size:clamp(38px,6.6vw,74px); line-height:.94; margin:16px 0 0;
+  text-transform:uppercase;
+}
+h1 em{font-style:normal; color:var(--laut)}
+.tesis{
+  max-width:63ch; margin:18px 0 0; font-size:17px; color:var(--tinta2);
+  border-left:2px solid var(--dangkal); padding-left:16px;
+}
+.jangkar{
+  margin-top:22px; display:flex; gap:26px; flex-wrap:wrap;
+  font-family:var(--angka); font-size:12px; color:var(--tinta3);
+}
+.jangkar b{font-weight:500; color:var(--tinta); font-variant-numeric:tabular-nums}
+
+/* ---------- tata letak ---------- */
+.kerja{display:grid; grid-template-columns:288px 1fr; gap:30px; margin-top:30px; align-items:start}
+@media(max-width:940px){.kerja{grid-template-columns:1fr}}
+
+/* ---------- panel parameter ---------- */
+.panel{
+  position:sticky; top:16px; background:var(--kertas3);
+  border:1px solid var(--garis); border-top:2.5px solid var(--laut);
+  border-radius:var(--r); padding:18px 17px 20px; box-shadow:var(--bayang);
+}
+@media(max-width:940px){.panel{position:static}}
+.panel h2{
+  font-family:var(--display); font-size:11.5px; font-weight:600; letter-spacing:.17em;
+  text-transform:uppercase; color:var(--laut); margin:0 0 4px;
+}
+.panel .ket{font-size:12.5px; color:var(--tinta3); margin:0 0 16px; line-height:1.5}
+
+.kendali{margin-bottom:15px}
+.kendali .baris{display:flex; justify-content:space-between; align-items:baseline; gap:8px}
+.kendali label{
+  font-family:var(--display); font-size:12.5px; font-weight:500;
+  letter-spacing:.02em; color:var(--tinta);
+}
+.kendali output{
+  font-family:var(--angka); font-size:12.5px; font-weight:500; color:var(--laut);
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.kendali .satuan{font-size:11px; color:var(--tinta3); font-family:var(--angka); display:block; margin-top:1px}
+
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:22px;
+  background:transparent; margin:2px 0 0; cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:3px; background:var(--garis2); border-radius:2px;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:15px; height:15px; margin-top:-6px;
+  background:var(--kertas3); border:2.5px solid var(--laut); border-radius:50%;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.14)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 4px rgba(20,85,95,.22)}
+input[type=range]::-moz-range-track{height:3px; background:var(--garis2); border-radius:2px}
+input[type=range]::-moz-range-thumb{
+  width:13px; height:13px; background:var(--kertas3);
+  border:2.5px solid var(--laut); border-radius:50%;
+}
+input[type=range]:focus-visible{outline:none}
+
+.tombol-set{
+  display:flex; gap:6px; margin-top:16px; padding-top:14px; border-top:1px solid var(--garis);
+}
+.tombol-set button{
+  flex:1; font-family:var(--display); font-size:11.5px; font-weight:600;
+  letter-spacing:.08em; text-transform:uppercase; padding:8px 6px;
+  background:transparent; color:var(--laut); border:1px solid var(--garis2);
+  border-radius:var(--r); cursor:pointer; transition:all .14s ease;
+}
+.tombol-set button:hover{background:var(--laut); color:var(--kertas3); border-color:var(--laut)}
+.tombol-set button:focus-visible{outline:2px solid var(--laut); outline-offset:2px}
+
+/* ---------- kanvas ---------- */
+.tab{display:flex; gap:0; border-bottom:1.5px solid var(--tinta); margin-bottom:22px; flex-wrap:wrap}
+.tab button{
+  font-family:var(--display); font-size:12.5px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; padding:11px 15px; background:transparent;
+  border:none; border-bottom:3px solid transparent; margin-bottom:-1.5px;
+  color:var(--tinta3); cursor:pointer; transition:color .14s ease, border-color .14s ease;
+}
+.tab button:hover{color:var(--tinta)}
+.tab button[aria-selected=true]{color:var(--tinta); border-bottom-color:var(--karang)}
+.tab button:focus-visible{outline:2px solid var(--laut); outline-offset:-2px}
+.tab .no{font-family:var(--angka); font-size:10.5px; color:var(--dangkal); margin-right:6px}
+
+.lembar{display:none}
+.lembar[data-aktif=true]{display:block; animation:masuk .32s ease}
+@keyframes masuk{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
+
+h3.tajuk{
+  font-family:var(--display); font-size:19px; font-weight:600; letter-spacing:-.005em;
+  margin:0 0 6px; text-transform:none;
+}
+p.pengantar{margin:0 0 18px; color:var(--tinta2); max-width:76ch; font-size:14.8px}
+
+/* ---------- kartu angka ---------- */
+.kisi-angka{display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:12px; margin-bottom:22px}
+.kartu{
+  background:var(--kertas3); border:1px solid var(--garis); border-radius:var(--r);
+  padding:14px 15px 15px; position:relative; overflow:hidden;
+}
+.kartu::after{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--dangkal);
+}
+.kartu.sorot::after{background:var(--karang)}
+.kartu.aman::after{background:var(--laut)}
+.kartu .nama{
+  font-family:var(--display); font-size:11px; font-weight:600; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--tinta3); display:block; margin-bottom:7px;
+}
+.kartu .nilai{
+  font-family:var(--angka); font-size:26px; font-weight:500; letter-spacing:-.02em;
+  color:var(--tinta); font-variant-numeric:tabular-nums; display:block; line-height:1.05;
+}
+.kartu .nilai small{font-size:14px; color:var(--tinta2); font-weight:400}
+.kartu .kaki{font-size:12.5px; color:var(--tinta3); margin-top:6px; display:block; line-height:1.45}
+
+/* ---------- bacaan otomatis ---------- */
+.bacaan{
+  margin-top:24px; background:var(--kertas3); border:1px solid var(--garis);
+  border-left:3px solid var(--laut); border-radius:var(--r); padding:17px 19px 18px;
+}
+.bacaan h4{
+  font-family:var(--display); font-size:11.5px; font-weight:600; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--laut); margin:0 0 9px;
+  display:flex; align-items:center; gap:9px;
+}
+.bacaan h4::after{content:""; flex:1; height:1px; background:var(--garis)}
+.bacaan p{margin:0 0 9px; font-size:14.8px; line-height:1.66}
+.bacaan p:last-child{margin-bottom:0}
+.bacaan .tegas{color:var(--karang); font-weight:500}
+.bacaan .angka{font-family:var(--angka); font-size:.93em; font-variant-numeric:tabular-nums}
+.bacaan.berubah{animation:kedip .5s ease}
+@keyframes kedip{0%{border-left-color:var(--karang)} 100%{border-left-color:var(--laut)}}
+
+/* ---------- gambar ---------- */
+.bidang{
+  background:var(--kertas3); border:1px solid var(--garis); border-radius:var(--r);
+  padding:16px 14px 10px; margin-bottom:16px; overflow-x:auto;
+}
+.bidang .judul{
+  font-family:var(--display); font-size:12.5px; font-weight:600; letter-spacing:.05em;
+  color:var(--tinta); margin:0 0 2px; padding:0 4px;
+}
+.bidang .subjudul{font-size:12.5px; color:var(--tinta3); margin:0 0 10px; padding:0 4px}
+svg{display:block; max-width:100%; height:auto}
+svg text{font-family:var(--angka); fill:var(--tinta2)}
+svg .lbl{font-family:var(--display); font-size:11.5px; fill:var(--tinta); font-weight:500}
+svg .num{font-size:10.5px; fill:var(--tinta3)}
+svg .sumbu{stroke:var(--garis2); stroke-width:1}
+svg .kisi{stroke:var(--garis); stroke-width:.8; stroke-dasharray:2 3}
+
+/* ---------- tabel ---------- */
+table{width:100%; border-collapse:collapse; font-size:13px; margin-top:4px}
+thead th{
+  font-family:var(--display); font-size:11px; font-weight:600; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--tinta3); text-align:left;
+  padding:7px 9px; border-bottom:1.5px solid var(--tinta2); white-space:nowrap;
+}
+tbody td{padding:6px 9px; border-bottom:1px solid var(--garis); vertical-align:middle}
+tbody tr:hover{background:var(--kertas2)}
+td.n, th.n{text-align:right; font-family:var(--angka); font-variant-numeric:tabular-nums; font-size:12.4px}
+.tag{
+  font-family:var(--display); font-size:10.5px; font-weight:600; letter-spacing:.07em;
+  text-transform:uppercase; padding:2.5px 7px; border-radius:2px; white-space:nowrap;
+}
+.tag.s{background:rgba(20,85,95,.13); color:var(--laut)}
+.tag.k{background:rgba(174,68,41,.13); color:var(--karang)}
+.tag.c{background:rgba(176,138,33,.15); color:var(--pasir)}
+
+/* ---------- baris pilih ---------- */
+.pilihan{display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px}
+.pilihan button{
+  font-family:var(--display); font-size:11.5px; font-weight:500; letter-spacing:.05em;
+  padding:5px 11px; background:var(--kertas3); border:1px solid var(--garis2);
+  border-radius:12px; color:var(--tinta2); cursor:pointer; transition:all .13s ease;
+}
+.pilihan button:hover{border-color:var(--laut); color:var(--laut)}
+.pilihan button[aria-pressed=true]{background:var(--laut); color:var(--kertas3); border-color:var(--laut)}
+.pilihan button:focus-visible{outline:2px solid var(--laut); outline-offset:2px}
+
+/* ---------- kaki ---------- */
+footer{
+  margin-top:52px; padding-top:20px; border-top:1.5px solid var(--tinta);
+  font-size:12.8px; color:var(--tinta3); line-height:1.6;
+}
+footer a{color:var(--laut)}
+footer .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px}
+footer h5{
+  font-family:var(--display); font-size:11px; font-weight:600; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--tinta2); margin:0 0 6px;
+}
+footer ul{margin:0; padding-left:15px}
+footer li{margin-bottom:3px}
+
+.catatan{font-size:12.5px; color:var(--tinta3); margin-top:10px; line-height:1.55}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important; transition-duration:.001ms !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="bungkus">
+
+<header>
+  <div class="eyebrow">
+    <span>Forkestra 2026</span><span>Subtema Hilirisasi, Stabilitas Pangan, Sektor Maritim</span><span>Simulasi Kebijakan</span>
+  </div>
+  <h1>Simpul<br><em>Friksi Pasar Pangan Sulawesi&nbsp;Tenggara</em></h1>
+  <p class="tesis">
+    Persoalan pangan di provinsi ini bukan kekurangan produksi maupun kekurangan modal,
+    melainkan ketiadaan mekanisme pencocokan antara produksi yang tersebar di tujuh belas
+    kabupaten dengan permintaan yang sudah tersedia. Geser parameter di sebelah kiri untuk
+    menguji sendiri pernyataan tersebut.
+  </p>
+  <div class="jangkar">
+    <span>Produksi tangkap 2024 <b>272.457 t</b></span>
+    <span>Nilai produksi <b>Rp7,16 T</b></span>
+    <span>Penerima manfaat <b>704.066</b></span>
+    <span>Dapur <b>282</b></span>
+    <span>Pemasok <b>1.969</b></span>
+  </div>
+</header>
+
+<div class="kerja">
+
+  <!-- ================= PANEL PARAMETER ================= -->
+  <aside class="panel" aria-label="Parameter simulasi">
+    <h2>Parameter</h2>
+    <p class="ket">Seluruh angka pada halaman ini dihitung ulang setiap kali parameter digeser.
+      Nilai awal adalah nilai yang dipakai dalam naskah.</p>
+
+    <div class="kendali">
+      <div class="baris"><label for="pPenerima">Penerima manfaat</label><output id="oPenerima"></output></div>
+      <input type="range" id="pPenerima" min="300000" max="1200000" step="10000" value="704066">
+      <span class="satuan">orang, posisi 31 Juli 2026: 704.066</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pHari">Hari layanan</label><output id="oHari"></output></div>
+      <input type="range" id="pHari" min="180" max="300" step="1" value="246">
+      <span class="satuan">hari per tahun, kisaran resmi 240–252</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pFrek">Frekuensi menu ikan</label><output id="oFrek"></output></div>
+      <input type="range" id="pFrek" min="5" max="70" step="1" value="30">
+      <span class="satuan">persen hari layanan</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pGram">Ikan per porsi</label><output id="oGram"></output></div>
+      <input type="range" id="pGram" min="50" max="150" step="1" value="100">
+      <span class="satuan">gram utuh, standar gizi menuntut 81–108</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pPhi">Batas serapan</label><output id="oPhi"></output></div>
+      <input type="range" id="pPhi" min="2" max="80" step="1" value="25">
+      <span class="satuan">per mil produksi kabupaten per tahun</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pHarga">Harga produsen</label><output id="oHarga"></output></div>
+      <input type="range" id="pHarga" min="12000" max="45000" step="250" value="26262">
+      <span class="satuan">rupiah per kilogram, tertimbang volume</span>
+    </div>
+
+    <div class="kendali">
+      <div class="baris"><label for="pAmbang">Ambang friksi struktural</label><output id="oAmbang"></output></div>
+      <input type="range" id="pAmbang" min="20" max="80" step="1" value="50">
+      <span class="satuan">pangsa ragam permanen, persen</span>
+    </div>
+
+    <div class="tombol-set">
+      <button type="button" id="btnNaskah">Nilai naskah</button>
+      <button type="button" id="btnMaritim">Skenario maritim</button>
+    </div>
+  </aside>
+
+  <!-- ================= KANVAS ================= -->
+  <main>
+    <div class="tab" role="tablist" aria-label="Lembar analisis">
+      <button role="tab" id="t0" aria-controls="l0" aria-selected="true"><span class="no">00</span>Ringkasan</button>
+      <button role="tab" id="t1" aria-controls="l1" aria-selected="false"><span class="no">01</span>Friksi eceran</button>
+      <button role="tab" id="t2" aria-controls="l2" aria-selected="false"><span class="no">02</span>Harga produsen</button>
+      <button role="tab" id="t3" aria-controls="l3" aria-selected="false"><span class="no">03</span>Pencocokan</button>
+      <button role="tab" id="t4" aria-controls="l4" aria-selected="false"><span class="no">04</span>Kepekaan</button>
+    </div>
+
+    <!-- ---------- 00 RINGKASAN ---------- -->
+    <section class="lembar" id="l0" role="tabpanel" aria-labelledby="t0" data-aktif="true">
+      <h3 class="tajuk">Keadaan pada parameter yang sedang dipilih</h3>
+      <p class="pengantar">Empat besaran berikut adalah keluaran pokok simulasi. Ketiganya dihitung
+        dari data produksi Kementerian Kelautan dan Perikanan tahun 2024 dan proyeksi penduduk
+        Badan Pusat Statistik tahun 2026, bukan dari angka yang ditetapkan lebih dahulu.</p>
+      <div class="kisi-angka" id="kartuRingkas"></div>
+      <div class="bidang">
+        <p class="judul">Kedudukan kebutuhan program terhadap kapasitas provinsi</p>
+        <p class="subjudul">Batang atas adalah produksi perikanan tangkap, batang bawah adalah kebutuhan program pada parameter berjalan</p>
+        <div id="gbrSkala"></div>
+      </div>
+      <div class="bacaan" id="bacaRingkas"><h4>Bacaan otomatis</h4><div class="isi"></div></div>
+    </section>
+
+    <!-- ---------- 01 FRIKSI ECERAN ---------- -->
+    <section class="lembar" id="l1" role="tabpanel" aria-labelledby="t1">
+      <h3 class="tajuk">Dua jenis friksi yang menuntut kebijakan berlawanan</h3>
+      <p class="pengantar">Selisih harga antara Kendari dan Baubau diuraikan menjadi komponen
+        permanen dan komponen sementara melalui model <em>unobserved components</em> (komponen tak
+        teramati). Pangsa ragam permanen yang tinggi menandakan biaya angkut yang menetap,
+        sedangkan pangsa yang rendah menandakan kegagalan koordinasi. Geser ambang pada panel
+        parameter untuk melihat perubahan penggolongan.</p>
+      <div class="bidang">
+        <p class="judul">Peta taksonomi friksi</p>
+        <p class="subjudul">Sumbu mendatar adalah selisih harga rata-rata, sumbu tegak adalah pangsa ragam permanen</p>
+        <div id="gbrFriksi"></div>
+      </div>
+      <div id="tabFriksi"></div>
+      <div class="bacaan" id="bacaFriksi"><h4>Bacaan otomatis</h4><div class="isi"></div></div>
+    </section>
+
+    <!-- ---------- 02 HARGA PRODUSEN ---------- -->
+    <section class="lembar" id="l2" role="tabpanel" aria-labelledby="t2">
+      <h3 class="tajuk">Sebaran harga yang diterima nelayan</h3>
+      <p class="pengantar">Setiap garis menunjukkan rentang harga untuk satu jenis ikan yang sama
+        di berbagai kabupaten pada 2024. Penanda kiri adalah kabupaten dengan harga terendah,
+        penanda kanan adalah yang tertinggi, dan belah ketupat adalah nilai tengahnya. Pilih satu
+        jenis ikan untuk melihat rincian menurut kabupaten.</p>
+      <div class="pilihan" id="pilihIkan"></div>
+      <div class="bidang">
+        <p class="judul">Rentang harga produsen antarkabupaten</p>
+        <p class="subjudul">Satuan ribu rupiah per kilogram, hanya jenis ikan yang tercatat di sekurangnya delapan kabupaten</p>
+        <div id="gbrSebaran"></div>
+      </div>
+      <div id="rincianIkan"></div>
+      <div class="bacaan" id="bacaSebaran"><h4>Bacaan otomatis</h4><div class="isi"></div></div>
+    </section>
+
+    <!-- ---------- 03 PENCOCOKAN ---------- -->
+    <section class="lembar" id="l3" role="tabpanel" aria-labelledby="t3">
+      <h3 class="tajuk">Pencocokan pasokan dengan kebutuhan menurut kabupaten</h3>
+      <p class="pengantar">Alokasi dihitung dengan meminimumkan biaya pengadaan. Pasokan diambil
+        lebih dahulu dari kabupaten tempat dapur berada, kemudian dari kabupaten lain dalam gugus
+        geografis yang sama, kemudian dari gugus seberang, dan terakhir dari luar provinsi.
+        Kolom terakhir menunjukkan beban perpindahan yang harus dijadwalkan.</p>
+      <div class="kisi-angka" id="kartuAlokasi"></div>
+      <div class="bidang">
+        <p class="judul">Ketidaksesuaian ruang antara pasokan dan kebutuhan</p>
+        <p class="subjudul">Batang ke kanan berarti surplus, batang ke kiri berarti defisit, satuan poin persen</p>
+        <div id="gbrRuang"></div>
+      </div>
+      <div id="tabAlokasi"></div>
+      <div class="bacaan" id="bacaAlokasi"><h4>Bacaan otomatis</h4><div class="isi"></div></div>
+    </section>
+
+    <!-- ---------- 04 KEPEKAAN ---------- -->
+    <section class="lembar" id="l4" role="tabpanel" aria-labelledby="t4">
+      <h3 class="tajuk">Ketahanan kesimpulan terhadap pilihan asumsi</h3>
+      <p class="pengantar">Kisi berikut menghitung kebutuhan ikan program sebagai persentase
+        produksi provinsi pada berbagai kombinasi frekuensi menu ikan dan berat porsi. Sel yang
+        ditandai adalah kombinasi yang sedang dipilih pada panel parameter. Kesimpulan bahwa
+        kapasitas pasokan bukan kendala hanya dapat dipertahankan apabila seluruh sel berada jauh
+        di bawah seratus persen.</p>
+      <div class="bidang">
+        <p class="judul">Kisi kepekaan kebutuhan terhadap produksi provinsi</p>
+        <p class="subjudul">Nilai dalam persen produksi perikanan tangkap 2024</p>
+        <div id="gbrKisi"></div>
+      </div>
+      <div class="bacaan" id="bacaKisi"><h4>Bacaan otomatis</h4><div class="isi"></div></div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="grid">
+    <div>
+      <h5>Sumber data</h5>
+      <ul>
+        <li>Kementerian Kelautan dan Perikanan, produksi perikanan tangkap 2024 menurut jenis ikan dan kabupaten</li>
+        <li>Dinas Kelautan dan Perikanan Sulawesi Tenggara melalui Satu Data provinsi</li>
+        <li>Bank Indonesia, Pusat Informasi Harga Pangan Strategis</li>
+        <li>Badan Pusat Statistik, proyeksi penduduk dan indeks harga konsumen</li>
+        <li>Badan Gizi Nasional, Juknis Kepka 401.1 Tahun 2025 dan Siaran Pers SIPERS-98/BGN/02/2026</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Batasan yang perlu diketahui</h5>
+      <ul>
+        <li>Sebagian harga pada berkas sumber tercatat dalam angka bulat, sehingga harga per pengamatan tidak presisi meskipun sebarannya telah diuji nyata</li>
+        <li>Perbedaan mutu dan ukuran ikan antarkabupaten tidak dapat dikendalikan dengan data yang tersedia</li>
+        <li>Matriks jarak antarkabupaten tidak tersedia, sehingga biaya perpindahan disusun bertingkat menurut gugus geografis</li>
+        <li>Frekuensi kemunculan menu ikan merupakan pilihan kebijakan, bukan angka yang ditetapkan</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Cara membaca</h5>
+      <p>Setiap lembar menyediakan bacaan otomatis yang disusun dari nilai numerik hasil
+        perhitungan, bukan dari teks yang disiapkan lebih dahulu. Apabila sebuah pengujian tidak
+        menghasilkan bukti yang cukup, bacaan akan menyatakan hal itu secara terbuka.</p>
+      <p style="margin-top:8px">Berkas pengolahan lengkap beserta notebook dan data tersedia pada
+        lampiran naskah.</p>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<script>
+/* ==================================================================
+   SIMPUL — mesin simulasi
+   Seluruh perhitungan dijalankan di dalam peramban. Tidak ada angka
+   yang disiapkan lebih dahulu selain data mentah dari lembaga resmi.
+   ================================================================== */
+
+const DATA = {"wilayah":[{"n":"Bombana","pop":165590,"ton":29516.0,"val":872135000000,"hrg":29548,"g":"darat"},{"n":"Buton Tengah","pop":124930,"ton":25854.7,"val":512435000000,"hrg":19820,"g":"pulau"},{"n":"Buton Selatan","pop":104400,"ton":24188.6,"val":789605000000,"hrg":32644,"g":"pulau"},{"n":"Wakatobi","pop":121790,"ton":22797.1,"val":539207000000,"hrg":23652,"g":"pulau"},{"n":"Kolaka","pop":254270,"ton":22456.3,"val":757254000000,"hrg":33721,"g":"darat"},{"n":"Kendari","pop":383710,"ton":20297.1,"val":347079000000,"hrg":17100,"g":"darat"},{"n":"Buton","pop":125650,"ton":19333.4,"val":385016000000,"hrg":19914,"g":"pulau"},{"n":"Muna","pop":234540,"ton":18930.0,"val":679817000000,"hrg":35912,"g":"pulau"},{"n":"Baubau","pop":173180,"ton":18705.5,"val":438976000000,"hrg":23468,"g":"pulau"},{"n":"Konawe Utara","pop":76970,"ton":15463.0,"val":391092000000,"hrg":25563,"g":"darat"},{"n":"Muna Barat","pop":94310,"ton":14398.0,"val":422123000000,"hrg":29318,"g":"pulau"},{"n":"Konawe Selatan","pop":340020,"ton":10731.8,"val":254999000000,"hrg":23153,"g":"darat"},{"n":"Konawe Kepulauan","pop":41020,"ton":10036.6,"val":194590000000,"hrg":19388,"g":"pulau"},{"n":"Buton Utara","pop":71410,"ton":8851.1,"val":208616000000,"hrg":23570,"g":"pulau"},{"n":"Kolaka Utara","pop":154180,"ton":7053.1,"val":237626000000,"hrg":33702,"g":"darat"},{"n":"Konawe","pop":283000,"ton":3667.8,"val":117696000000,"hrg":32333,"g":"darat"},{"n":"Kolaka Timur","pop":131040,"ton":176.5,"val":6753000000,"hrg":0,"g":"darat"}],"sebaran":[{"j":"Cakalang","nk":12,"ton":19908.2,"mn":15000,"md":20105,"mx":35000,"sd":0.2603,"d":{"Baubau":[20210,5133.8],"Bombana":[30000,3255.1],"Buton":[16940,1715.2],"Buton Selatan":[25000,1030.5],"Buton Utara":[15000,325.5],"Kendari":[15519,4614.5],"Kolaka":[20000,1054.0],"Kolaka Utara":[35000,714.9],"Konawe":[22737,92.6],"Konawe Kepulauan":[17462,927.9],"Muna Barat":[25000,298.2],"Wakatobi":[20000,745.9]}},{"j":"Tuna Sirip Kuning","nk":12,"ton":12215.3,"mn":15000,"md":26838,"mx":50000,"sd":0.3675,"d":{"Baubau":[21066,1815.2],"Bombana":[30000,984.9],"Buton":[20749,1364.8],"Buton Selatan":[40000,2321.7],"Buton Utara":[50000,497.7],"Kendari":[18518,1454.3],"Kolaka":[25000,113.4],"Kolaka Utara":[35000,528.4],"Konawe Kepulauan":[15000,1741.3],"Konawe Selatan":[28675,169.2],"Muna":[40000,79.1],"Wakatobi":[20000,1145.3]}},{"j":"Kembung Lelaki","nk":9,"ton":9444.5,"mn":20000,"md":28968,"mx":39639,"sd":0.2158,"d":{"Bombana":[25000,2898.5],"Buton Tengah":[39639,854.6],"Kendari":[28968,374.6],"Kolaka":[29980,1658.6],"Kolaka Utara":[30000,165.3],"Konawe Kepulauan":[20000,407.5],"Konawe Selatan":[22000,571.0],"Muna":[35000,1729.0],"Muna Barat":[25740,785.3]}},{"j":"Kembung Gepeng","nk":11,"ton":9212.0,"mn":17263,"md":25000,"mx":40000,"sd":0.267,"d":{"Baubau":[35574,1108.9],"Bombana":[25000,3067.1],"Buton":[24890,728.4],"Buton Selatan":[30000,1275.4],"Buton Utara":[17263,652.9],"Kolaka Utara":[30000,196.8],"Konawe":[21827,109.1],"Konawe Kepulauan":[20000,333.3],"Konawe Selatan":[40000,105.8],"Konawe Utara":[32452,860.7],"Wakatobi":[20000,773.5]}},{"j":"Kuwe","nk":11,"ton":8363.6,"mn":20000,"md":35000,"mx":50000,"sd":0.3021,"d":{"Baubau":[35778,816.3],"Bombana":[35000,951.6],"Buton Selatan":[50000,1641.6],"Buton Tengah":[40000,1271.9],"Buton Utara":[30000,823.2],"Kolaka Utara":[50000,237.9],"Konawe":[25000,224.2],"Konawe Kepulauan":[20000,70.3],"Konawe Selatan":[22785,797.5],"Konawe Utara":[40000,1035.9],"Muna Barat":[30000,493.2]}},{"j":"Tembang Garis Kuning","nk":14,"ton":7639.6,"mn":8820,"md":12040,"mx":25000,"sd":0.2969,"d":{"Baubau":[12080,632.5],"Bombana":[15000,481.9],"Buton":[8820,203.0],"Buton Selatan":[10000,278.1],"Buton Tengah":[10000,1544.7],"Kendari":[12168,369.3],"Kolaka":[10723,278.8],"Kolaka Utara":[25000,136.2],"Konawe":[15000,109.9],"Konawe Kepulauan":[10000,85.3],"Konawe Selatan":[10000,473.1],"Konawe Utara":[12000,2465.7],"Muna":[20000,246.3],"Muna Barat":[15000,335.0]}},{"j":"Lencam","nk":9,"ton":7306.4,"mn":20000,"md":30000,"mx":40000,"sd":0.1945,"d":{"Baubau":[40000,127.1],"Bombana":[30000,884.1],"Buton Selatan":[30000,1929.2],"Buton Tengah":[30000,627.8],"Kendari":[36412,168.0],"Kolaka":[35000,1133.0],"Konawe Kepulauan":[30000,144.4],"Muna":[30000,350.4],"Wakatobi":[20000,1942.5]}},{"j":"Tenggiri","nk":14,"ton":5915.3,"mn":20000,"md":40000,"mx":78000,"sd":0.3569,"d":{"Baubau":[20000,307.1],"Bombana":[30000,1087.4],"Buton":[35000,416.6],"Buton Selatan":[40000,1402.8],"Buton Tengah":[60000,71.8],"Buton Utara":[40000,226.8],"Kolaka":[50000,808.1],"Kolaka Utara":[40000,128.7],"Konawe":[30000,211.2],"Konawe Kepulauan":[45000,160.6],"Konawe Utara":[78000,78.1],"Muna":[70000,244.6],"Muna Barat":[50000,295.6],"Wakatobi":[40000,475.9]}},{"j":"Cumi-Cumi","nk":14,"ton":5230.8,"mn":20000,"md":32794,"mx":50000,"sd":0.258,"d":{"Baubau":[40470,80.9],"Bombana":[30000,78.8],"Buton":[20000,276.6],"Buton Selatan":[35000,337.6],"Buton Tengah":[28336,811.5],"Kendari":[38008,281.6],"Kolaka":[38250,88.4],"Kolaka Utara":[20000,904.8],"Konawe Kepulauan":[35000,156.9],"Konawe Selatan":[35000,233.4],"Konawe Utara":[30588,53.1],"Muna":[50000,483.4],"Muna Barat":[25000,896.6],"Wakatobi":[30000,547.2]}},{"j":"Layang Benggol","nk":9,"ton":4497.4,"mn":8480,"md":18119,"mx":30000,"sd":0.4307,"d":{"Bombana":[25000,122.3],"Buton":[8480,1682.8],"Buton Utara":[18119,596.2],"Kendari":[17117,861.8],"Kolaka":[25000,117.2],"Kolaka Utara":[25000,173.6],"Konawe Kepulauan":[12000,370.8],"Konawe Selatan":[11962,127.0],"Muna":[30000,445.7]}},{"j":"Kerapu Karang","nk":9,"ton":4142.8,"mn":17365,"md":40000,"mx":50000,"sd":0.3517,"d":{"Buton":[42183,282.1],"Buton Selatan":[45000,1863.3],"Buton Utara":[17365,199.0],"Kolaka":[40000,222.6],"Kolaka Utara":[50000,188.6],"Konawe":[40000,145.1],"Konawe Kepulauan":[32223,88.8],"Konawe Selatan":[25000,403.1],"Wakatobi":[50000,750.2]}},{"j":"Baronang Bintik Putih","nk":10,"ton":4099.9,"mn":12000,"md":24994,"mx":44513,"sd":0.3782,"d":{"Baubau":[44513,262.3],"Bombana":[25000,416.0],"Buton":[30000,274.9],"Buton Selatan":[35000,336.5],"Buton Utara":[12000,311.4],"Kendari":[35339,151.5],"Kolaka":[24988,173.1],"Konawe Kepulauan":[20000,124.4],"Konawe Selatan":[20000,711.1],"Wakatobi":[20000,1338.8]}},{"j":"Kakap Merah Pesisir","nk":8,"ton":3479.2,"mn":35000,"md":42500,"mx":50000,"sd":0.1536,"d":{"Baubau":[40000,66.7],"Bombana":[35000,482.4],"Kendari":[50000,112.5],"Kolaka":[50000,593.4],"Konawe":[35000,209.1],"Muna":[45000,585.9],"Muna Barat":[50000,117.0],"Wakatobi":[40000,1312.2]}},{"j":"Selar Kuning","nk":9,"ton":3189.4,"mn":12075,"md":25000,"mx":28734,"sd":0.3348,"d":{"Baubau":[27540,303.0],"Bombana":[25000,348.4],"Buton Tengah":[15000,1079.6],"Buton Utara":[17346,432.0],"Kendari":[28734,204.2],"Kolaka":[28719,96.8],"Konawe Selatan":[12075,392.6],"Konawe Utara":[25000,162.7],"Wakatobi":[15000,169.9]}}],"friksi":[{"k":"Gula Pasir","w":-6.35,"pi":1.0,"adf":0.3921,"kpss":0.021,"hrg":18191},{"k":"Beras","w":6.13,"pi":1.0,"adf":0.0709,"kpss":0.1,"hrg":13219},{"k":"Daging Sapi","w":-3.46,"pi":0.73,"adf":0.0653,"kpss":0.01,"hrg":131934},{"k":"Minyak Goreng","w":-11.84,"pi":0.522,"adf":0.3364,"kpss":0.1,"hrg":20415},{"k":"Bawang Putih","w":4.51,"pi":0.449,"adf":0.0002,"kpss":0.1,"hrg":42211},{"k":"Cabai Rawit","w":12.92,"pi":0.171,"adf":0.0,"kpss":0.1,"hrg":57623},{"k":"Telur Ayam","w":-2.13,"pi":0.03,"adf":0.0,"kpss":0.036,"hrg":29343},{"k":"Daging Ayam","w":2.05,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":34776},{"k":"Cabai Merah","w":-1.73,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":44914},{"k":"Bawang Merah","w":2.42,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":43110}]};
+
+/* ---------- pembantu format ---------- */
+const nf = (x, d = 0) => new Intl.NumberFormat("id-ID",
+  { minimumFractionDigits: d, maximumFractionDigits: d }).format(x);
+const rp = (x) => "Rp" + nf(Math.round(x));
+const pct = (x, d = 1) => nf(x, d) + " persen";
+const el = (s) => document.querySelector(s);
+const buat = (t, a = {}) => {
+  const e = document.createElementNS("http://www.w3.org/2000/svg", t);
+  for (const k in a) e.setAttribute(k, a[k]);
+  return e;
+};
+
+/* ---------- keadaan ---------- */
+const K = {
+  penerima: 704066, hari: 246, frek: 0.30, gram: 100,
+  phi: 0.025, harga: 26262, ambang: 0.50,
+  ikanTerpilih: null, lembar: 0,
+};
+
+const TOTAL_TON = DATA.wilayah.reduce((s, w) => s + w.ton, 0);
+const TOTAL_POP = DATA.wilayah.reduce((s, w) => s + w.pop, 0);
+const TOTAL_NILAI = DATA.wilayah.reduce((s, w) => s + w.val, 0);
+const BAHAN_BAKU_MIN = 8000, BAHAN_BAKU_MAK = 10000;
+
+/* ==================================================================
+   1. MESIN ALOKASI
+   Persoalan pengadaan berbentuk masalah transportasi dengan biaya
+   bertingkat. Karena seluruh sambungan pada satu tingkat memiliki
+   biaya yang sama, penyelesaian dengan mendahulukan tingkat termurah
+   sudah menghasilkan penyelesaian optimal, dan hasilnya identik
+   dengan pemrograman linear pada notebook pengolahan.
+   ================================================================== */
+function hitungKebutuhan() {
+  return K.penerima * K.hari * K.frek * (K.gram / 1000) / 1000; // ton per tahun
+}
+
+function alokasi(phi, kebutuhan) {
+  const S = {}, D = {}, G = {};
+  DATA.wilayah.forEach(w => {
+    S[w.n] = w.ton * phi;
+    D[w.n] = kebutuhan * w.pop / TOTAL_POP;
+    G[w.n] = w.g;
+  });
+  const rinci = {};
+  DATA.wilayah.forEach(w => rinci[w.n] = { sendiri: 0, terima: 0, kirim: 0, luar: 0 });
+
+  // tingkat nol: pasokan dari kabupaten itu sendiri
+  let sendiri = 0;
+  for (const w in S) {
+    const a = Math.min(S[w], D[w]);
+    S[w] -= a; D[w] -= a; sendiri += a;
+    rinci[w].sendiri = a;
+  }
+  // tingkat satu: antarkabupaten di dalam satu gugus geografis
+  let dalamGugus = 0;
+  ["pulau", "darat"].forEach(g => {
+    const ang = Object.keys(S).filter(w => G[w] === g);
+    const sp = ang.reduce((s, w) => s + S[w], 0);
+    const dm = ang.reduce((s, w) => s + D[w], 0);
+    const a = Math.min(sp, dm);
+    if (a <= 0) return;
+    ang.forEach(w => {
+      if (sp > 0) { const k = S[w] * a / sp; S[w] -= k; rinci[w].kirim += k; }
+      if (dm > 0) { const t = D[w] * a / dm; D[w] -= t; rinci[w].terima += t; }
+    });
+    dalamGugus += a;
+  });
+  // tingkat dua: menyeberang antargugus
+  const sp = Object.keys(S).reduce((s, w) => s + S[w], 0);
+  const dm = Object.keys(D).reduce((s, w) => s + D[w], 0);
+  const seberang = Math.min(sp, dm);
+  if (seberang > 0) {
+    for (const w in S) {
+      if (sp > 0) { const k = S[w] * seberang / sp; S[w] -= k; rinci[w].kirim += k; }
+      if (dm > 0) { const t = D[w] * seberang / dm; D[w] -= t; rinci[w].terima += t; }
+    }
+  }
+  // sisa didatangkan dari luar provinsi
+  let luar = 0;
+  for (const w in D) { luar += D[w]; rinci[w].luar = D[w]; }
+
+  const lokal = sendiri + dalamGugus + seberang;
+  const total = lokal + luar;
+  return {
+    phi, kebutuhan, sendiri, dalamGugus, seberang, luar, lokal, rinci,
+    pangsa: total > 0 ? lokal / total : 0,
+    antar: dalamGugus + seberang,
+    pangsaAntar: lokal > 0 ? (dalamGugus + seberang) / lokal : 0,
+    nilai: lokal * K.harga * 1000,
+  };
+}
+
+function titikJenuh(kebutuhan) {
+  // batas serapan terkecil yang sudah memenuhi seluruh kebutuhan dari dalam provinsi
+  return TOTAL_TON > 0 ? kebutuhan / TOTAL_TON : NaN;
+}
+
+/* ==================================================================
+   2. FRIKSI ECERAN
+   ================================================================== */
+function golongkan(pi) {
+  if (pi >= K.ambang) return { kode: "s", nama: "Friksi struktural" };
+  if (pi <= K.ambang * 0.4) return { kode: "k", nama: "Kegagalan koordinasi" };
+  return { kode: "c", nama: "Antara" };
+}
+
+/* ==================================================================
+   3. PENGGAMBAR
+   ================================================================== */
+function gbrSkala() {
+  const keb = hitungKebutuhan();
+  const W = 860, H = 150, kiri = 132, kanan = 24;
+  const lebar = W - kiri - kanan;
+  const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  s.appendChild(buat("title")).textContent =
+    `Kebutuhan program ${nf(keb)} ton dibandingkan produksi ${nf(TOTAL_TON)} ton`;
+
+  const skala = (v) => (v / TOTAL_TON) * lebar;
+  const baris = [
+    { lbl: "Produksi tangkap", v: TOTAL_TON, y: 34, c: "var(--dangkal)" },
+    { lbl: "Kebutuhan program", v: keb, y: 82, c: "var(--karang)" },
+  ];
+  baris.forEach(b => {
+    const t = buat("text", { x: kiri - 10, y: b.y + 17, "text-anchor": "end", class: "lbl" });
+    t.textContent = b.lbl; s.appendChild(t);
+    s.appendChild(buat("rect", {
+      x: kiri, y: b.y, width: Math.max(skala(b.v), 1.5), height: 26,
+      fill: b.c, rx: 1,
+    }));
+    const a = buat("text", {
+      x: kiri + Math.max(skala(b.v), 1.5) + 9, y: b.y + 18, class: "num",
+    });
+    a.textContent = nf(b.v) + " t";
+    s.appendChild(a);
+  });
+  // penggaris
+  s.appendChild(buat("line", { x1: kiri, y1: 122, x2: kiri + lebar, y2: 122, class: "sumbu" }));
+  for (let i = 0; i <= 5; i++) {
+    const x = kiri + lebar * i / 5;
+    s.appendChild(buat("line", { x1: x, y1: 122, x2: x, y2: 127, class: "sumbu" }));
+    const t = buat("text", { x, y: 140, "text-anchor": "middle", class: "num" });
+    t.textContent = nf(TOTAL_TON * i / 5 / 1000) + "k";
+    s.appendChild(t);
+  }
+  el("#gbrSkala").replaceChildren(s);
+}
+
+function gbrFriksi() {
+  const W = 860, H = 430, kiri = 62, kanan = 190, atas = 22, bawah = 46;
+  const lw = W - kiri - kanan, lh = H - atas - bawah;
+  const xs = DATA.friksi.map(d => d.w);
+  const xmin = Math.min(...xs) - 4, xmax = Math.max(...xs) + 4;
+  const X = (v) => kiri + (v - xmin) / (xmax - xmin) * lw;
+  const Y = (v) => atas + (1 - v) * lh;
+
+  const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  s.appendChild(buat("title")).textContent = "Peta taksonomi friksi harga eceran";
+
+  for (let i = 0; i <= 5; i++) {
+    const y = Y(i / 5);
+    s.appendChild(buat("line", { x1: kiri, y1: y, x2: kiri + lw, y2: y, class: "kisi" }));
+    const t = buat("text", { x: kiri - 9, y: y + 4, "text-anchor": "end", class: "num" });
+    t.textContent = (i / 5).toFixed(1); s.appendChild(t);
+  }
+  s.appendChild(buat("line", { x1: X(0), y1: atas, x2: X(0), y2: atas + lh, class: "sumbu" }));
+  [K.ambang, K.ambang * 0.4].forEach((a, i) => {
+    s.appendChild(buat("line", {
+      x1: kiri, y1: Y(a), x2: kiri + lw, y2: Y(a),
+      stroke: i ? "var(--karang)" : "var(--laut)", "stroke-width": 1.3,
+      "stroke-dasharray": "5 4", opacity: .75,
+    }));
+  });
+
+  const warna = { s: "var(--laut)", k: "var(--karang)", c: "var(--pasir)" };
+  const urut = [...DATA.friksi].sort((a, b) => b.pi - a.pi);
+  const dipakai = [];
+  urut.forEach(d => {
+    const g = golongkan(d.pi), x = X(d.w), y = Y(d.pi);
+    s.appendChild(buat("circle", {
+      cx: x, cy: y, r: 6.5, fill: warna[g.kode], stroke: "var(--kertas3)", "stroke-width": 1.6,
+    }));
+    let ly = y;
+    while (dipakai.some(v => Math.abs(v - ly) < 15)) ly += 15;
+    dipakai.push(ly);
+    const arah = x > kiri + lw * 0.62 ? -1 : 1;
+    s.appendChild(buat("line", {
+      x1: x + arah * 8, y1: y, x2: x + arah * 20, y2: ly,
+      stroke: warna[g.kode], "stroke-width": .8, opacity: .55,
+    }));
+    const t = buat("text", {
+      x: x + arah * 24, y: ly + 4, class: "lbl",
+      "text-anchor": arah > 0 ? "start" : "end", fill: warna[g.kode],
+    });
+    t.textContent = d.k; s.appendChild(t);
+  });
+
+  const kx = kiri + lw + 26;
+  [["Friksi struktural", "s"], ["Antara", "c"], ["Kegagalan koordinasi", "k"]].forEach((p, i) => {
+    const y = atas + 14 + i * 21;
+    s.appendChild(buat("rect", { x: kx, y: y - 8, width: 11, height: 11, fill: warna[p[1]], rx: 1 }));
+    const t = buat("text", { x: kx + 17, y: y + 1, class: "lbl" });
+    t.textContent = p[0]; s.appendChild(t);
+  });
+  const ket = buat("text", { x: kx, y: atas + 92, class: "num" });
+  ket.textContent = "Ambang: " + pct(K.ambang * 100, 0); s.appendChild(ket);
+
+  const sx = buat("text", { x: kiri + lw / 2, y: H - 10, "text-anchor": "middle", class: "lbl" });
+  sx.textContent = "Selisih harga rata-rata, Kendari terhadap Baubau (persen)"; s.appendChild(sx);
+  const sy = buat("text", {
+    x: 16, y: atas + lh / 2, class: "lbl",
+    transform: `rotate(-90 16 ${atas + lh / 2})`, "text-anchor": "middle",
+  });
+  sy.textContent = "Pangsa ragam permanen"; s.appendChild(sy);
+
+  for (let i = 0; i <= 4; i++) {
+    const v = xmin + (xmax - xmin) * i / 4, x = X(v);
+    const t = buat("text", { x, y: atas + lh + 17, "text-anchor": "middle", class: "num" });
+    t.textContent = nf(v, 0); s.appendChild(t);
+  }
+  el("#gbrFriksi").replaceChildren(s);
+}
+
+function gbrSebaran() {
+  const d = [...DATA.sebaran].sort((a, b) => (a.mx / a.mn) - (b.mx / b.mn));
+  const W = 860, kiri = 148, kanan = 74, atas = 16;
+  const tinggiBaris = 26, H = atas + d.length * tinggiBaris + 42;
+  const lw = W - kiri - kanan;
+  const maxH = Math.max(...d.map(x => x.mx)) * 1.04;
+  const X = (v) => kiri + v / maxH * lw;
+
+  const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  s.appendChild(buat("title")).textContent = "Rentang harga produsen antarkabupaten menurut jenis ikan";
+
+  for (let i = 0; i <= 4; i++) {
+    const x = kiri + lw * i / 4;
+    s.appendChild(buat("line", { x1: x, y1: atas - 4, x2: x, y2: atas + d.length * tinggiBaris, class: "kisi" }));
+    const t = buat("text", { x, y: H - 22, "text-anchor": "middle", class: "num" });
+    t.textContent = nf(maxH * i / 4 / 1000, 0); s.appendChild(t);
+  }
+
+  d.forEach((r, i) => {
+    const y = atas + i * tinggiBaris + tinggiBaris / 2;
+    const sorot = K.ikanTerpilih === r.j;
+    const nm = buat("text", {
+      x: kiri - 11, y: y + 4, "text-anchor": "end", class: "lbl",
+      fill: sorot ? "var(--karang)" : "var(--tinta)",
+      "font-weight": sorot ? 700 : 500,
+    });
+    nm.textContent = r.j; s.appendChild(nm);
+
+    s.appendChild(buat("line", {
+      x1: X(r.mn), y1: y, x2: X(r.mx), y2: y,
+      stroke: sorot ? "var(--karang)" : "var(--dangkal)",
+      "stroke-width": sorot ? 4.5 : 3.2, "stroke-linecap": "round", opacity: sorot ? .95 : .7,
+    }));
+    s.appendChild(buat("circle", { cx: X(r.mn), cy: y, r: 4.6, fill: "var(--karang)" }));
+    s.appendChild(buat("circle", { cx: X(r.mx), cy: y, r: 4.6, fill: "var(--laut)" }));
+    s.appendChild(buat("rect", {
+      x: X(r.md) - 3.6, y: y - 3.6, width: 7.2, height: 7.2,
+      fill: "var(--tinta2)", transform: `rotate(45 ${X(r.md)} ${y})`,
+    }));
+    const rr = buat("text", { x: X(r.mx) + 10, y: y + 4, class: "num" });
+    rr.textContent = nf(r.mx / r.mn, 1) + "\u00d7"; s.appendChild(rr);
+  });
+
+  const sx = buat("text", { x: kiri + lw / 2, y: H - 5, "text-anchor": "middle", class: "lbl" });
+  sx.textContent = "Harga produsen (ribu rupiah per kilogram)"; s.appendChild(sx);
+  el("#gbrSebaran").replaceChildren(s);
+}
+
+function gbrRuang(hasil) {
+  const keb = hasil.kebutuhan;
+  const d = DATA.wilayah.map(w => ({
+    n: w.n, g: w.g,
+    m: (w.ton / TOTAL_TON) - (w.pop / TOTAL_POP),
+  })).sort((a, b) => a.m - b.m);
+
+  const W = 860, kiri = 152, kanan = 60, atas = 14;
+  const tb = 24, H = atas + d.length * tb + 34;
+  const lw = W - kiri - kanan;
+  const maks = Math.max(...d.map(x => Math.abs(x.m))) * 1.12;
+  const X = (v) => kiri + lw / 2 + (v / maks) * (lw / 2);
+
+  const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  s.appendChild(buat("title")).textContent = "Ketidaksesuaian ruang antara pasokan dan kebutuhan";
+
+  s.appendChild(buat("line", {
+    x1: X(0), y1: atas - 3, x2: X(0), y2: atas + d.length * tb, class: "sumbu", "stroke-width": 1.4,
+  }));
+
+  d.forEach((r, i) => {
+    const y = atas + i * tb + 3;
+    const w = Math.abs(X(r.m) - X(0));
+    s.appendChild(buat("rect", {
+      x: r.m >= 0 ? X(0) : X(r.m), y, width: Math.max(w, .8), height: tb - 8,
+      fill: r.g === "pulau" ? "var(--laut)" : "var(--pasir)", rx: 1, opacity: .88,
+    }));
+    const nm = buat("text", { x: kiri - 11, y: y + 12, "text-anchor": "end", class: "lbl" });
+    nm.textContent = r.n; s.appendChild(nm);
+    const v = buat("text", {
+      x: r.m >= 0 ? X(r.m) + 7 : X(r.m) - 7, y: y + 12, class: "num",
+      "text-anchor": r.m >= 0 ? "start" : "end",
+    });
+    v.textContent = (r.m >= 0 ? "+" : "\u2212") + nf(Math.abs(r.m) * 100, 1); s.appendChild(v);
+  });
+
+  [["Gugus kepulauan", "var(--laut)", 0], ["Gugus daratan", "var(--pasir)", 1]].forEach(p => {
+    const x = kiri + p[2] * 148;
+    s.appendChild(buat("rect", { x, y: H - 22, width: 11, height: 11, fill: p[1], rx: 1 }));
+    const t = buat("text", { x: x + 17, y: H - 13, class: "lbl" });
+    t.textContent = p[0]; s.appendChild(t);
+  });
+  el("#gbrRuang").replaceChildren(s);
+}
+
+function gbrKisi() {
+  const frek = [0.15, 0.20, 0.30, 0.40, 0.50, 0.60];
+  const gram = [70, 80, 90, 100, 110, 120, 130];
+  const W = 860, kiri = 92, atas = 34, sel = 58, tinggiSel = 40;
+  const lebarSel = (W - kiri - 24) / gram.length;
+  const H = atas + frek.length * tinggiSel + 54;
+  const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+  s.appendChild(buat("title")).textContent = "Kisi kepekaan kebutuhan terhadap produksi provinsi";
+
+  const nilai = frek.map(f => gram.map(g =>
+    K.penerima * K.hari * f * (g / 1000) / 1000 / TOTAL_TON * 100));
+  const maks = Math.max(...nilai.flat());
+
+  gram.forEach((g, j) => {
+    const t = buat("text", {
+      x: kiri + j * lebarSel + lebarSel / 2, y: atas - 11,
+      "text-anchor": "middle", class: "lbl",
+    });
+    t.textContent = g + " g"; s.appendChild(t);
+  });
+  frek.forEach((f, i) => {
+    const t = buat("text", {
+      x: kiri - 11, y: atas + i * tinggiSel + tinggiSel / 2 + 4,
+      "text-anchor": "end", class: "lbl",
+    });
+    t.textContent = nf(f * 100, 0) + " persen"; s.appendChild(t);
+  });
+
+  const dekatFrek = frek.reduce((a, b) => Math.abs(b - K.frek) < Math.abs(a - K.frek) ? b : a);
+  const dekatGram = gram.reduce((a, b) => Math.abs(b - K.gram) < Math.abs(a - K.gram) ? b : a);
+
+  frek.forEach((f, i) => gram.forEach((g, j) => {
+    const v = nilai[i][j], x = kiri + j * lebarSel, y = atas + i * tinggiSel;
+    const kuat = Math.min(v / maks, 1);
+    s.appendChild(buat("rect", {
+      x: x + 1.5, y: y + 1.5, width: lebarSel - 3, height: tinggiSel - 3,
+      fill: "var(--laut)", opacity: 0.09 + kuat * 0.62, rx: 2,
+    }));
+    const t = buat("text", {
+      x: x + lebarSel / 2, y: y + tinggiSel / 2 + 4.5, "text-anchor": "middle",
+      class: "num", fill: kuat > .58 ? "var(--kertas3)" : "var(--tinta)",
+      "font-weight": (f === dekatFrek && g === dekatGram) ? 600 : 400,
+      "font-size": 11.5,
+    });
+    t.textContent = nf(v, 2); s.appendChild(t);
+    if (f === dekatFrek && g === dekatGram) {
+      s.appendChild(buat("rect", {
+        x: x + 1.5, y: y + 1.5, width: lebarSel - 3, height: tinggiSel - 3,
+        fill: "none", stroke: "var(--karang)", "stroke-width": 2.6, rx: 2,
+      }));
+    }
+  }));
+
+  const sx = buat("text", { x: kiri + (W - kiri - 24) / 2, y: H - 22, "text-anchor": "middle", class: "lbl" });
+  sx.textContent = "Berat ikan utuh per porsi pada hari bermenu ikan"; s.appendChild(sx);
+  const sk = buat("text", { x: kiri + (W - kiri - 24) / 2, y: H - 6, "text-anchor": "middle", class: "num" });
+  sk.textContent = "Sel bergaris merah adalah kombinasi yang sedang dipilih"; s.appendChild(sk);
+  const sy = buat("text", {
+    x: 15, y: atas + frek.length * tinggiSel / 2, class: "lbl",
+    transform: `rotate(-90 15 ${atas + frek.length * tinggiSel / 2})`, "text-anchor": "middle",
+  });
+  sy.textContent = "Frekuensi menu ikan"; s.appendChild(sy);
+
+  el("#gbrKisi").replaceChildren(s);
+  return { nilai, maks };
+}
+
+/* ==================================================================
+   4. INTERPRETASI OTOMATIS
+   Setiap kalimat dibentuk dari nilai numerik hasil perhitungan dan
+   aturan ambang yang tertulis di dalam kode. Kesimpulan yang tidak
+   didukung angka tidak dapat muncul.
+   ================================================================== */
+const A = (x) => `<span class="angka">${x}</span>`;
+const T = (x) => `<span class="tegas">${x}</span>`;
+
+function bacaRingkas(h) {
+  const rasio = h.kebutuhan / TOTAL_TON * 100;
+  const angMin = K.penerima * BAHAN_BAKU_MIN * K.hari;
+  const angMak = K.penerima * BAHAN_BAKU_MAK * K.hari;
+  const pangsaIkan = (K.frek * (K.gram / 1000) * K.harga) / BAHAN_BAKU_MIN * 100;
+  const jenuh = titikJenuh(h.kebutuhan) * 100;
+  const b = [];
+
+  b.push(`Pada parameter yang sedang dipilih, kebutuhan ikan program mencapai
+    ${A(nf(h.kebutuhan) + " ton")} per tahun. Angka tersebut setara ${T(pct(rasio, 2))}
+    produksi perikanan tangkap provinsi yang berjumlah ${A(nf(TOTAL_TON) + " ton")}.`);
+
+  if (rasio < 10) {
+    b.push(`Karena kebutuhan berada jauh di bawah kapasitas, ketersediaan bahan bukan kendala
+      yang mengikat. Kendala yang sesungguhnya terletak pada pencocokan dan penjadwalan
+      pengiriman, bukan pada penambahan produksi.`);
+  } else if (rasio < 60) {
+    b.push(`Kebutuhan mulai menyerap bagian yang berarti dari kapasitas provinsi, sehingga
+      penyerapan program perlu diselaraskan dengan permintaan pasar lain agar tidak menekan
+      ketersediaan bagi rumah tangga.`);
+  } else if (rasio < 100) {
+    b.push(`Kebutuhan sudah mendekati kapasitas provinsi. Pada tingkat ini penyerapan program
+      berpotensi menggeser pasokan dari pasar rumah tangga, sehingga dampaknya terhadap harga
+      perlu diperhitungkan sebelum kebijakan dijalankan.`);
+  } else {
+    b.push(`${T("Kebutuhan melampaui kapasitas provinsi.")} Pada kombinasi parameter ini
+      seluruh produksi tidak akan mencukupi, sehingga pendatangan dari luar provinsi menjadi
+      keharusan dan kesimpulan mengenai kecukupan kapasitas tidak berlaku.`);
+  }
+
+  b.push(`Belanja bahan baku program diperkirakan ${A(rp(angMin))} sampai ${A(rp(angMak))}
+    per tahun. Dengan frekuensi menu ikan ${A(pct(K.frek * 100, 0))} dan berat
+    ${A(K.gram + " gram")} per porsi, nilai ikan menyerap ${T(pct(pangsaIkan, 1))} anggaran
+    bahan baku. Pangsa ini diturunkan dari harga dan standar gizi, bukan diasumsikan.`);
+
+  if (!isNaN(jenuh)) {
+    b.push(`Seluruh kebutuhan dapat dipenuhi dari dalam provinsi apabila setiap kabupaten
+      bersedia menyisihkan sekurangnya ${A(nf(jenuh, 2) + " persen")} produksi tahunannya.
+      Batas serapan yang sedang dipilih adalah ${A(nf(K.phi * 100, 1) + " persen")}, sehingga
+      ${h.pangsa >= 0.999
+        ? "kebutuhan sudah terpenuhi seluruhnya dari dalam provinsi."
+        : `baru ${T(pct(h.pangsa * 100, 1))} kebutuhan yang terpenuhi dan sisanya sebesar
+           ${A(nf(h.luar) + " ton")} harus didatangkan dari luar provinsi.`}`);
+  }
+  return b.map(x => `<p>${x}</p>`).join("");
+}
+
+function bacaFriksi() {
+  const g = DATA.friksi.map(d => ({ ...d, gol: golongkan(d.pi) }));
+  const st = g.filter(d => d.gol.kode === "s");
+  const ko = g.filter(d => d.gol.kode === "k");
+  const an = g.filter(d => d.gol.kode === "c");
+  const stTakStas = st.filter(d => d.adf > 0.05).length;
+  const koStas = ko.filter(d => d.adf < 0.05).length;
+  const b = [];
+
+  b.push(`Pada ambang ${A(pct(K.ambang * 100, 0))}, sebanyak ${A(st.length)} komoditas
+    digolongkan sebagai friksi struktural, ${A(ko.length)} komoditas sebagai kegagalan
+    koordinasi, dan ${A(an.length)} komoditas berada di antara keduanya.`);
+
+  if (st.length) {
+    b.push(`Kelompok friksi struktural terdiri atas ${T(st.map(d => d.k).join(", "))}.
+      Pada kelompok ini pangsa ragam permanen berkisar ${A(nf(Math.min(...st.map(d => d.pi)), 2))}
+      sampai ${A(nf(Math.max(...st.map(d => d.pi)), 2))}, yang berarti sebagian besar selisih
+      harga tidak hilang dengan berjalannya waktu. Sebanyak ${A(stTakStas)} di antaranya tidak
+      dapat menolak hipotesis akar unit pada taraf lima persen, sehingga selisih harganya memang
+      tidak kembali ke satu nilai tetap.`);
+  }
+  if (ko.length) {
+    b.push(`Kelompok kegagalan koordinasi terdiri atas ${T(ko.map(d => d.k).join(", "))}.
+      Sebanyak ${A(koStas)} dari ${A(ko.length)} komoditas pada kelompok ini menolak hipotesis
+      akar unit pada taraf lima persen, sehingga selisih harganya kembali ke satu nilai tetap
+      dan karena itu tidak berasal dari biaya angkut.`);
+  }
+
+  const luarProvinsi = ["Gula Pasir", "Beras", "Daging Sapi", "Minyak Goreng"];
+  const cocok = st.filter(d => luarProvinsi.includes(d.k)).length;
+  if (st.length >= 3 && cocok / st.length >= 0.75) {
+    b.push(`Penggolongan ini mengikuti garis asal barang. Komoditas yang didatangkan atau diolah
+      di luar provinsi berkumpul pada kelompok struktural, sedangkan komoditas yang diproduksi
+      setempat berkumpul pada kelompok koordinasi. Implikasi kebijakannya berlawanan arah.
+      Kelompok pertama menuntut perbaikan sarana dan jadwal angkutan, sedangkan kelompok kedua
+      menuntut penyebaran informasi harga serta pencocokan pembeli dengan penjual.`);
+  } else {
+    b.push(`Pada ambang ini penggolongan tidak lagi mengikuti garis asal barang secara tegas,
+      sehingga pembedaan antara persoalan logistik dan persoalan koordinasi menjadi kabur.
+      Ambang di sekitar lima puluh persen menghasilkan pemilahan yang paling sejalan dengan
+      hasil uji akar unit.`);
+  }
+  return b.map(x => `<p>${x}</p>`).join("");
+}
+
+function bacaSebaran() {
+  const d = DATA.sebaran;
+  const sdRerata = d.reduce((s, x) => s + x.sd, 0) / d.length;
+  const rasioRerata = d.reduce((s, x) => s + x.mx / x.mn, 0) / d.length;
+  const SD_ECERAN = 0.0989;
+  const lipat = sdRerata / SD_ECERAN;
+  const terlebar = [...d].sort((a, b) => (b.mx / b.mn) - (a.mx / a.mn))[0];
+  const b = [];
+
+  b.push(`Untuk ${A(d.length)} jenis ikan yang tercatat pada sekurangnya delapan kabupaten,
+    simpangan baku logaritma harga antarkabupaten mencapai ${A(nf(sdRerata, 4))} dengan rasio
+    harga tertinggi terhadap terendah sebesar ${T(nf(rasioRerata, 2) + " kali")}. Ukuran yang
+    sama pada harga eceran antara dua kota hanya ${A(nf(SD_ECERAN, 4))}.`);
+
+  b.push(`Sebaran yang dihadapi nelayan dengan demikian ${T(nf(lipat, 2) + " kali")} lebih lebar
+    daripada sebaran yang dihadapi konsumen. Barang jadi bergerak antarkota sehingga harga eceran
+    saling mendekat, sedangkan hasil tangkapan tidak bergerak antarkabupaten sehingga harga yang
+    diterima nelayan tetap terpisah-pisah.`);
+
+  b.push(`Sebaran terlebar terjadi pada ${T(terlebar.j)}, yaitu ${A(rp(terlebar.mn))} per kilogram
+    di kabupaten terendah dan ${A(rp(terlebar.mx))} di kabupaten tertinggi, atau
+    ${A(nf(terlebar.mx / terlebar.mn, 1) + " kali")} lipat untuk jenis ikan yang sama pada tahun
+    yang sama.`);
+
+  if (K.ikanTerpilih) {
+    const r = d.find(x => x.j === K.ikanTerpilih);
+    const per = Object.entries(r.d).sort((a, b2) => b2[1][0] - a[1][0]);
+    b.push(`Jenis ikan yang sedang dipilih adalah ${T(r.j)} dengan volume tercatat
+      ${A(nf(r.ton) + " ton")} pada ${A(r.nk)} kabupaten. Harga tertinggi diterima nelayan di
+      ${T(per[0][0])} sebesar ${A(rp(per[0][1][0]))} per kilogram, sedangkan yang terendah di
+      ${T(per[per.length - 1][0])} sebesar ${A(rp(per[per.length - 1][1][0]))}.`);
+  }
+
+  b.push(`Sebaran ini telah diuji terhadap dua penjelasan tandingan. Simulasi tiga ribu ulangan
+    menunjukkan pembulatan pelaporan hanya menghasilkan simpangan baku logaritma sebesar
+    ${A("0,021")}, sehingga sebaran yang teramati ${A("14,2 kali")} lebih besar daripada yang
+    dapat dijelaskan pembulatan. Kekuatan tawar pembeli terbukti nyata namun hanya menjelaskan
+    ${A("4,08 persen")} ragam harga di dalam jenis ikan yang sama.`);
+  return b.map(x => `<p>${x}</p>`).join("");
+}
+
+function bacaAlokasi(h) {
+  const d = DATA.wilayah.map(w => ({
+    n: w.n, g: w.g, m: (w.ton / TOTAL_TON) - (w.pop / TOTAL_POP),
+  }));
+  const iks = d.reduce((s, x) => s + Math.abs(x.m), 0) / 2;
+  const pulau = d.filter(x => x.g === "pulau");
+  const darat = d.filter(x => x.g === "darat");
+  const pSur = pulau.filter(x => x.m > 0).length;
+  const dSur = darat.filter(x => x.m > 0).length;
+  const surplus = [...d].sort((a, b) => b.m - a.m).slice(0, 3);
+  const defisit = [...d].sort((a, b) => a.m - b.m).slice(0, 3);
+  const b = [];
+
+  b.push(`Indeks ketidaksesuaian ruang bernilai ${T(nf(iks, 4))}, yang berarti
+    ${A(pct(iks * 100, 2))} produksi harus berpindah kabupaten agar sebaran pasokan sama dengan
+    sebaran kebutuhan. Tiga wilayah dengan surplus terbesar adalah
+    ${surplus.map(x => `${x.n} (${nf(x.m * 100, 1)} poin persen)`).join(", ")}, sedangkan defisit
+    terbesar terjadi di ${defisit.map(x => `${x.n} (${nf(x.m * 100, 1)})`).join(", ")}.`);
+
+  if (pSur / pulau.length > 0.6 && dSur / darat.length < 0.5) {
+    b.push(`Pola surplus dan defisit mengikuti garis pantai. Sebanyak ${A(pSur)} dari
+      ${A(pulau.length)} wilayah kepulauan mengalami surplus, sedangkan hanya ${A(dSur)} dari
+      ${A(darat.length)} wilayah daratan. Ketidaksesuaian ini berakar pada geografi, sehingga
+      penanganannya memang harus melalui penjadwalan pengangkutan dan bukan melalui penambahan
+      produksi.`);
+  } else {
+    b.push(`Pada data yang sedang dipakai, pola surplus dan defisit belum mengikuti pembagian
+      gugus geografis secara tegas, sehingga penjelasan berbasis geografi perlu ditelusuri lebih
+      jauh.`);
+  }
+
+  b.push(`Pada batas serapan ${A(nf(K.phi * 100, 1) + " persen")}, sebanyak
+    ${A(nf(h.lokal) + " ton")} atau ${T(pct(h.pangsa * 100, 1))} kebutuhan dapat dipenuhi dari
+    dalam provinsi. Pasokan yang berasal dari kabupaten tempat dapur berada mencapai
+    ${A(nf(h.sendiri) + " ton")}, sedangkan ${A(nf(h.dalamGugus) + " ton")} berpindah di dalam
+    satu gugus dan ${A(nf(h.seberang) + " ton")} harus menyeberang antargugus.`);
+
+  b.push(`Keluaran yang paling berguna bagi penyusun kebijakan adalah beban perpindahan, yaitu
+    ${T(nf(h.antar) + " ton")} atau ${A(pct(h.pangsaAntar * 100, 1))} dari pasokan setempat yang
+    harus melintasi batas kabupaten. Angka itulah yang menentukan kebutuhan jadwal pelayaran dan
+    sarana rantai dingin. Nilai yang sampai ke produsen mencapai ${A(rp(h.nilai))}.`);
+
+  const jenuh = titikJenuh(h.kebutuhan);
+  if (K.phi > jenuh * 1.05 && h.pangsa >= 0.999) {
+    b.push(`Batas serapan sudah melampaui titik jenuh sebesar ${A(pct(jenuh * 100, 2))}.
+      Menaikkannya lebih jauh tidak menambah retensi nilai, tetapi menurunkan beban perpindahan
+      antarkabupaten karena pasokan dapat diambil dari kabupaten yang lebih dekat.`);
+  } else if (h.pangsa < 0.999) {
+    b.push(`Batas serapan masih berada di bawah titik jenuh sebesar ${A(pct(jenuh * 100, 2))},
+      sehingga sebagian kebutuhan belum dapat dipenuhi dari dalam provinsi.`);
+  }
+  return b.map(x => `<p>${x}</p>`).join("");
+}
+
+function bacaKisi(kisi) {
+  const maks = kisi.maks, min = Math.min(...kisi.nilai.flat());
+  const kini = hitungKebutuhan() / TOTAL_TON * 100;
+  const b = [];
+  b.push(`Pada seluruh kombinasi yang diuji, kebutuhan ikan program berkisar antara
+    ${A(pct(min, 2))} sampai ${T(pct(maks, 2))} produksi provinsi. Kombinasi yang sedang dipilih
+    menghasilkan ${A(pct(kini, 2))}.`);
+  if (maks < 25) {
+    b.push(`Tidak ada satu pun kombinasi wajar yang mendekati batas kapasitas. Kesimpulan bahwa
+      kapasitas pasokan bukan kendala yang mengikat karena itu bertahan dengan margin yang lebar
+      dan tidak bergantung pada pilihan asumsi.`);
+  } else if (maks < 100) {
+    b.push(`Seluruh kombinasi masih berada di bawah kapasitas, namun marginnya tidak lebar.
+      Pada kombinasi yang paling menuntut, penyerapan program perlu diselaraskan dengan
+      permintaan pasar lain.`);
+  } else {
+    b.push(`${T("Terdapat kombinasi yang melampaui kapasitas provinsi.")} Kesimpulan mengenai
+      kecukupan kapasitas karena itu tidak dapat dipertahankan tanpa syarat pada rentang
+      parameter ini.`);
+  }
+  b.push(`Perlu dicatat bahwa berat porsi ditentukan standar gizi sehingga hampir tidak dapat
+    ditawar, sedangkan frekuensi kemunculan menu ikan merupakan pilihan kebijakan. Kisi ini
+    memisahkan keduanya agar pengaruh masing-masing dapat diperiksa tersendiri.`);
+  return b.map(x => `<p>${x}</p>`).join("");
+}
+
+/* ==================================================================
+   5. PENYAJI
+   ================================================================== */
+function kartu(nama, nilai, kaki, kelas = "") {
+  return `<div class="kartu ${kelas}"><span class="nama">${nama}</span>
+    <span class="nilai">${nilai}</span><span class="kaki">${kaki}</span></div>`;
+}
+
+function tabelFriksi() {
+  const g = [...DATA.friksi].map(d => ({ ...d, gol: golongkan(d.pi) }))
+    .sort((a, b) => b.pi - a.pi);
+  const baris = g.map(d => `<tr>
+    <td>${d.k}</td>
+    <td class="n">${nf(d.w, 2)}</td>
+    <td class="n">${nf(d.pi, 2)}</td>
+    <td class="n">${nf(d.adf, 3)}</td>
+    <td class="n">${d.hrg ? rp(d.hrg) : "\u2013"}</td>
+    <td><span class="tag ${d.gol.kode}">${d.gol.nama}</span></td></tr>`).join("");
+  el("#tabFriksi").innerHTML = `<div class="bidang"><table>
+    <thead><tr><th>Komoditas</th><th class="n">Selisih (%)</th><th class="n">Pangsa permanen</th>
+    <th class="n">Nilai p ADF</th><th class="n">Harga eceran</th><th>Penggolongan</th></tr></thead>
+    <tbody>${baris}</tbody></table>
+    <p class="catatan">Nilai p uji akar unit di bawah 0,05 berarti selisih harga kembali ke satu
+    nilai tetap, sehingga tidak berasal dari biaya angkut yang menetap.</p></div>`;
+}
+
+function rincianIkan() {
+  const w = el("#rincianIkan");
+  if (!K.ikanTerpilih) { w.innerHTML = ""; return; }
+  const r = DATA.sebaran.find(x => x.j === K.ikanTerpilih);
+  const per = Object.entries(r.d).sort((a, b) => b[1][0] - a[1][0]);
+  const md = r.md;
+  const baris = per.map(([n, v]) => {
+    const beda = (v[0] / md - 1) * 100;
+    return `<tr><td>${n}</td><td class="n">${rp(v[0])}</td>
+      <td class="n" style="color:${beda >= 0 ? "var(--laut)" : "var(--karang)"}">
+      ${beda >= 0 ? "+" : "\u2212"}${nf(Math.abs(beda), 1)}</td>
+      <td class="n">${nf(v[1], 1)}</td></tr>`;
+  }).join("");
+  w.innerHTML = `<div class="bidang"><p class="judul">Rincian ${r.j} menurut kabupaten</p>
+    <p class="subjudul">Selisih dihitung terhadap nilai tengah sebesar ${rp(md)} per kilogram</p>
+    <table><thead><tr><th>Kabupaten atau kota</th><th class="n">Harga produsen</th>
+    <th class="n">Selisih dari nilai tengah (%)</th><th class="n">Volume (ton)</th></tr></thead>
+    <tbody>${baris}</tbody></table></div>`;
+}
+
+function tabelAlokasi(h) {
+  const d = DATA.wilayah.map(w => {
+    const r = h.rinci[w.n];
+    return {
+      n: w.n, g: w.g, ton: w.ton, pop: w.pop,
+      kap: w.ton * K.phi, but: h.kebutuhan * w.pop / TOTAL_POP,
+      sendiri: r.sendiri, kirim: r.kirim, terima: r.terima, luar: r.luar,
+      m: (w.ton / TOTAL_TON) - (w.pop / TOTAL_POP),
+    };
+  }).sort((a, b) => b.kirim - a.kirim);
+
+  const baris = d.map(x => `<tr>
+    <td>${x.n}</td>
+    <td><span class="tag ${x.g === "pulau" ? "s" : "c"}">${x.g === "pulau" ? "Kepulauan" : "Daratan"}</span></td>
+    <td class="n">${nf(x.ton)}</td>
+    <td class="n">${nf(x.but, 1)}</td>
+    <td class="n">${nf(x.kap, 1)}</td>
+    <td class="n">${nf(x.sendiri, 1)}</td>
+    <td class="n" style="color:${x.kirim > 0.5 ? "var(--laut)" : "var(--tinta3)"}">${nf(x.kirim, 1)}</td>
+    <td class="n" style="color:${x.terima > 0.5 ? "var(--karang)" : "var(--tinta3)"}">${nf(x.terima, 1)}</td>
+    <td class="n">${nf(x.luar, 1)}</td></tr>`).join("");
+
+  el("#tabAlokasi").innerHTML = `<div class="bidang">
+    <p class="judul">Hasil alokasi menurut kabupaten dan kota</p>
+    <p class="subjudul">Seluruh satuan dalam ton per tahun, diurutkan menurut besar pengiriman keluar</p>
+    <table><thead><tr><th>Wilayah</th><th>Gugus</th><th class="n">Produksi</th>
+    <th class="n">Kebutuhan</th><th class="n">Kapasitas serap</th><th class="n">Dipenuhi sendiri</th>
+    <th class="n">Dikirim keluar</th><th class="n">Diterima</th><th class="n">Dari luar provinsi</th>
+    </tr></thead><tbody>${baris}</tbody></table>
+    <p class="catatan">Kapasitas serap adalah produksi tahunan dikalikan batas serapan yang sedang
+    dipilih. Kolom dikirim keluar dan diterima menunjukkan perpindahan antarkabupaten yang harus
+    dijadwalkan.</p></div>`;
+}
+
+/* ==================================================================
+   6. PEMBARUAN
+   ================================================================== */
+let waktuKedip;
+function tandaiBerubah() {
+  document.querySelectorAll(".bacaan").forEach(b => b.classList.remove("berubah"));
+  clearTimeout(waktuKedip);
+  waktuKedip = setTimeout(() => {
+    const b = document.querySelector('.lembar[data-aktif=true] .bacaan');
+    if (b) { b.classList.add("berubah"); }
+  }, 10);
+}
+
+function perbarui() {
+  el("#oPenerima").textContent = nf(K.penerima);
+  el("#oHari").textContent = K.hari;
+  el("#oFrek").textContent = nf(K.frek * 100, 0) + "%";
+  el("#oGram").textContent = K.gram + " g";
+  el("#oPhi").textContent = nf(K.phi * 100, 1) + "%";
+  el("#oHarga").textContent = rp(K.harga);
+  el("#oAmbang").textContent = nf(K.ambang * 100, 0) + "%";
+
+  const keb = hitungKebutuhan();
+  const h = alokasi(K.phi, keb);
+  const rasio = keb / TOTAL_TON * 100;
+  const angMin = K.penerima * BAHAN_BAKU_MIN * K.hari;
+
+  // lembar ringkasan
+  el("#kartuRingkas").innerHTML =
+    kartu("Kebutuhan ikan program", nf(keb) + " <small>t</small>",
+      "per tahun, dari standar gizi", "sorot") +
+    kartu("Pangsa produksi provinsi", nf(rasio, 2) + " <small>%</small>",
+      rasio < 10 ? "kapasitas bukan kendala" : "penyerapan mulai berarti",
+      rasio < 10 ? "aman" : "sorot") +
+    kartu("Nilai ke produsen", "Rp" + nf(h.nilai / 1e9, 1) + " <small>M</small>",
+      "pada harga tingkat pendaratan", "aman") +
+    kartu("Lintas kabupaten", nf(h.antar) + " <small>t</small>",
+      "beban penjadwalan pengiriman", "sorot") +
+    kartu("Anggaran bahan baku", "Rp" + nf(angMin / 1e12, 2) + " <small>T</small>",
+      "batas bawah, Rp8.000 per porsi") +
+    kartu("Dipenuhi dari dalam", nf(h.pangsa * 100, 1) + " <small>%</small>",
+      h.pangsa >= 0.999 ? "seluruh kebutuhan terpenuhi" : nf(h.luar) + " ton dari luar provinsi",
+      h.pangsa >= 0.999 ? "aman" : "sorot");
+  gbrSkala();
+  el("#bacaRingkas .isi").innerHTML = bacaRingkas(h);
+
+  // lembar friksi
+  gbrFriksi(); tabelFriksi();
+  el("#bacaFriksi .isi").innerHTML = bacaFriksi();
+
+  // lembar sebaran
+  gbrSebaran(); rincianIkan();
+  el("#bacaSebaran .isi").innerHTML = bacaSebaran();
+
+  // lembar pencocokan
+  el("#kartuAlokasi").innerHTML =
+    kartu("Batas serapan", nf(K.phi * 100, 1) + " <small>%</small>", "produksi kabupaten per tahun") +
+    kartu("Dipenuhi sendiri", nf(h.sendiri) + " <small>t</small>", "tanpa perpindahan antarkabupaten", "aman") +
+    kartu("Dalam satu gugus", nf(h.dalamGugus) + " <small>t</small>", "berpindah tanpa menyeberang") +
+    kartu("Menyeberang gugus", nf(h.seberang) + " <small>t</small>", "memerlukan angkutan laut", "sorot") +
+    kartu("Dari luar provinsi", nf(h.luar) + " <small>t</small>",
+      h.luar < 1 ? "tidak diperlukan" : "nilai keluar dari provinsi", h.luar < 1 ? "aman" : "sorot");
+  gbrRuang(h); tabelAlokasi(h);
+  el("#bacaAlokasi .isi").innerHTML = bacaAlokasi(h);
+
+  // lembar kepekaan
+  const kisi = gbrKisi();
+  el("#bacaKisi .isi").innerHTML = bacaKisi(kisi);
+
+  tandaiBerubah();
+}
+
+/* ==================================================================
+   7. PENGIKAT PERISTIWA
+   ================================================================== */
+const ikat = [
+  ["#pPenerima", v => K.penerima = +v],
+  ["#pHari", v => K.hari = +v],
+  ["#pFrek", v => K.frek = +v / 100],
+  ["#pGram", v => K.gram = +v],
+  ["#pPhi", v => K.phi = +v / 1000],
+  ["#pHarga", v => K.harga = +v],
+  ["#pAmbang", v => K.ambang = +v / 100],
+];
+ikat.forEach(([s, f]) => el(s).addEventListener("input", e => { f(e.target.value); perbarui(); }));
+
+function setelKe(nilai) {
+  const peta = {
+    pPenerima: nilai.penerima, pHari: nilai.hari, pFrek: nilai.frek * 100,
+    pGram: nilai.gram, pPhi: nilai.phi * 1000, pHarga: nilai.harga,
+    pAmbang: nilai.ambang * 100,
+  };
+  for (const id in peta) { el("#" + id).value = peta[id]; }
+  Object.assign(K, nilai);
+  perbarui();
+}
+el("#btnNaskah").addEventListener("click", () => setelKe({
+  penerima: 704066, hari: 246, frek: 0.30, gram: 100, phi: 0.025, harga: 26262, ambang: 0.50,
+}));
+el("#btnMaritim").addEventListener("click", () => setelKe({
+  penerima: 704066, hari: 252, frek: 0.50, gram: 108, phi: 0.05, harga: 26262, ambang: 0.50,
+}));
+
+// tab
+const tombolTab = [...document.querySelectorAll('[role=tab]')];
+tombolTab.forEach((t, i) => {
+  t.addEventListener("click", () => pilihTab(i));
+  t.addEventListener("keydown", e => {
+    if (e.key === "ArrowRight") { pilihTab((i + 1) % tombolTab.length); tombolTab[(i + 1) % tombolTab.length].focus(); }
+    if (e.key === "ArrowLeft") { const j = (i - 1 + tombolTab.length) % tombolTab.length; pilihTab(j); tombolTab[j].focus(); }
+  });
+});
+function pilihTab(i) {
+  K.lembar = i;
+  tombolTab.forEach((t, j) => {
+    t.setAttribute("aria-selected", j === i);
+    el("#l" + j).setAttribute("data-aktif", j === i);
+  });
+}
+
+// pilihan jenis ikan
+el("#pilihIkan").innerHTML = `<button type="button" data-j="" aria-pressed="true">Semua jenis</button>` +
+  [...DATA.sebaran].sort((a, b) => b.ton - a.ton)
+    .map(d => `<button type="button" data-j="${d.j}" aria-pressed="false">${d.j}</button>`).join("");
+el("#pilihIkan").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  K.ikanTerpilih = b.dataset.j || null;
+  [...el("#pilihIkan").children].forEach(x => x.setAttribute("aria-pressed", x === b));
+  gbrSebaran(); rincianIkan();
+  el("#bacaSebaran .isi").innerHTML = bacaSebaran();
+  tandaiBerubah();
+});
+
+perbarui();
+
+</script>
+</body>
+</html>
