@@ -1118,11 +1118,11 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
 
   /* ---------------------------------------------------------------- perencana SA-DDSO */
   E.LEVERS = [
-    { key: 'f', label: 'Penurunan margin distribusi ikan (logistik dan rantai dingin atau cold chain)', lo: 0, hi: 0.30, fmt: v => (100 * v).toFixed(1) + '%' },
-    { key: 's', label: 'Operasi pasar ikan (bagian dari pasokan)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1) + '%' },
-    { key: 'a', label: 'Tambahan penyerapan permintaan ikan (MBG, industri pengolahan, horeka, antarpulau dan ekspor)', lo: 0, hi: 0.15, fmt: v => (100 * v).toFixed(1) + '%' },
-    { key: 'g', label: 'Pengendalian harga pangan lain per bulan', lo: 0, hi: 0.004, fmt: v => (100 * v).toFixed(2) + '% per bulan' },
-    { key: 'tau', label: 'Transfer terarah (bagian garis kemiskinan per orang miskin)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1) + '%' }
+    { key: 'f', label: 'Penurunan margin distribusi ikan (logistik dan rantai dingin atau cold chain)', lo: 0, hi: 0.30, fmt: v => (100 * v).toFixed(1).replace('.', ',') + ' persen' },
+    { key: 's', label: 'Operasi pasar ikan (bagian dari pasokan)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1).replace('.', ',') + ' persen' },
+    { key: 'a', label: 'Tambahan penyerapan permintaan ikan (MBG, industri pengolahan, horeka, antarpulau dan ekspor)', lo: 0, hi: 0.15, fmt: v => (100 * v).toFixed(1).replace('.', ',') + ' persen' },
+    { key: 'g', label: 'Pengendalian harga pangan lain per bulan', lo: 0, hi: 0.004, fmt: v => (100 * v).toFixed(2).replace('.', ',') + ' persen per bulan' },
+    { key: 'tau', label: 'Transfer terarah (bagian garis kemiskinan per orang miskin)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1).replace('.', ',') + ' persen' }
   ];
   E.planner = function (M, o) {
     const rng = E.rng(o.seed || 20260922), lo = E.LEVERS.map(l => l.lo), hi = E.LEVERS.map(l => l.hi), d = lo.length;
@@ -2344,7 +2344,7 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
           <div class="kendali"><label for="sim-reg">Wilayah IHK untuk arahan harga</label><select id="sim-reg"></select></div>
           <div class="kendali"><label for="sim-pct">Penurunan penduduk miskin yang diinginkan (persen dari jumlah penduduk miskin)</label><input type="number" id="sim-pct" step="0.5" min="0" max="60" value="${S.poorPct}"></div>
           <div class="kendali"><label for="sim-area">Wilayah sasaran kemiskinan</label><select id="sim-area"><option value="all">Seluruh Sulawesi Tenggara</option>${Mm.kab.slice().sort((a, b) => a.name < b.name ? -1 : 1).map(k => `<option value="${k.code}">${esc(U.namaLengkap(k))}</option>`).join('')}</select></div>
-          <div class="kendali"><label for="sim-rho">Ketepatan sasaran transfer <span class="nilai" id="v-sim-rho"></span></label><input type="range" id="sim-rho" min="0.2" max="1" step="0.05" value="${S.rhoT}"></div>
+          <div class="kendali"><label for="sim-rho">Ketepatan sasaran transfer <span class="nilai" id="v-sim-rho"></span></label><input type="range" id="sim-rho" min="0.2" max="1" step="0.05" value="${S.rhoT}"><p class="catatan">Bagian dana transfer terarah (misalnya bantuan pangan atau tunai) yang benar-benar diterima rumah tangga miskin. Nilai 60 persen berarti 40 persen dana jatuh ke rumah tangga yang tidak miskin. Makin tepat sasaran, makin kecil biaya transfer untuk target yang sama. Pengaruhnya terlihat pada kolom biaya transfer setelah simulasi dijalankan ulang.</p></div>
           <div class="kendali"><label>Komponen harga yang boleh disesuaikan</label><div class="baris-tombol">${['VF', 'AP', 'CORE'].map(c => `<label><input type="checkbox" data-scls="${c}"${S.cls[c] ? ' checked' : ''}> ${U.KLS[c]}</label>`).join('')}</div></div>
         </div>
         <div class="baris-tombol"><button class="tombol" id="btn-sim" type="button">Jalankan simulasi</button><span class="catatan" id="sim-status"></span></div></div>
@@ -2358,6 +2358,7 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
       $('sim-pct').addEventListener('change', e => { const v = U.num(e.target.value); if (Number.isFinite(v) && v >= 0) { S.poorPct = v; stale(); } });
       $('sim-area').addEventListener('change', e => { S.area = e.target.value; stale(); });
       $('sim-rho').addEventListener('input', e => { S.rhoT = +e.target.value; $('v-sim-rho').textContent = fmt(100 * S.rhoT, 0) + ' persen'; });
+      $('sim-rho').addEventListener('change', () => stale());
       box.querySelectorAll('[data-scls]').forEach(i => i.addEventListener('change', () => { S.cls[i.dataset.scls] = i.checked; stale(); }));
       $('btn-sim').addEventListener('click', jalankanSim);
     }
@@ -2389,7 +2390,7 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
         const uns = {};
         Object.keys(pl.picks || {}).forEach(k => { const z = pl.picks[k]; if (z) uns[k] = E.uncertainty(Mm, z.x, { T, select: S.area, n: 300, reduction, mid: S.mid, dev: S.dev, rhoT: S.rhoT }); });
         S.pilih = S.pilih || 'ringan';
-        S.simRes = { inv, so, pl, uns, T, mid: S.mid, dev: S.dev, pct: S.poorPct, area: S.area, dasar, reduction, region: S.region, ms: performance.now() - t0, vintage: Mm.periods[Mm.periods.length - 1] };
+        S.simRes = { inv, so, pl, uns, T, mid: S.mid, dev: S.dev, pct: S.poorPct, area: S.area, dasar, reduction, region: S.region, rhoT: S.rhoT, ms: performance.now() - t0, vintage: Mm.periods[Mm.periods.length - 1] };
         S.simStale = false;
       } catch (e) { U.note('Simulasi gagal: ' + e.message); }
       btn.disabled = false;
@@ -2429,6 +2430,9 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
       <p class="pernyataan">Target: ${fmt0(R.reduction)} orang dari ${fmt0(R.dasar)} penduduk miskin awal. Pilihan <b>${NAMA_PILIH[S.pilih].toLowerCase()}</b> menurunkan <b>${fmt0(-un.dpoorSel.p50)} orang</b> (rentang 90 persen ${fmt0(-un.dpoorSel.p95)} sampai ${fmt0(-un.dpoorSel.p5)}), dengan inflasi tahunan ${fmt(un.yoy.p50)} persen (${fmt(un.yoy.p5)} sampai ${fmt(un.yoy.p95)}). Peluang target tercapai ${fmt(100 * (un.shareReach || 0), 1)} persen; peluang inflasi berada di dalam rentang sasaran ${fmt(100 * un.shareBand, 1)} persen.</p>
       <div class="dua"><div><div class="tabel-wadah"><table><thead><tr><th>Instrumen kebijakan</th><th class="n">Setelan</th></tr></thead><tbody>${E.LEVERS.map((l, i) => `<tr><td>${esc(l.label)}</td><td class="n">${esc(l.fmt(best.x[i]))}</td></tr>`).join('')}
         <tr><td>Biaya transfer (miliar rupiah per tahun)</td><td class="n">${fmt(best.cost, 1)}</td></tr><tr><td>${ab('NTN')} (proyeksi dasar = 100)</td><td class="n">${fmt(un.ntn.p50, 2)}</td></tr></tbody></table></div>
+        <p class="catatan">${best.x[4] > 1e-4
+          ? `Ketepatan sasaran transfer pada simulasi ini ${fmt(100 * (R.rhoT == null ? 0.6 : R.rhoT), 0)} persen. Dari biaya Rp${fmt(best.cost, 1)} miliar, sekitar Rp${fmt(best.cost * (R.rhoT == null ? 0.6 : R.rhoT), 1)} miliar yang sampai ke rumah tangga miskin. ${(R.rhoT == null ? 0.6 : R.rhoT) < 0.999 ? `Bila ketepatannya 100 persen, dampak yang sama cukup dengan biaya sekitar Rp${fmt(best.cost * (R.rhoT == null ? 0.6 : R.rhoT), 1)} miliar.` : 'Seluruh dana diasumsikan tepat sasaran.'}`
+          : 'Pilihan ini tidak memakai transfer terarah, sehingga penggeser ketepatan sasaran transfer tidak mengubah hasilnya. Transfer baru dipakai bila instrumen pasar belum cukup untuk mencapai target penurunan penduduk miskin; coba naikkan target di atas.'}</p>
         ${ket(['NTN', 'MBG'])}
         <p class="catatan">${R.pl.feasibleCount} dari ${R.pl.total} solusi akhir memenuhi target; ${R.pl.pareto.length} solusi Pareto sudah diverifikasi; waktu hitung ${fmt(R.ms / 1000, 1)} detik. Pencarian memakai lima tujuan: penurunan penduduk miskin, jarak inflasi ke sasaran, biaya transfer, nilai tukar nelayan, dan intensitas instrumen (rata-rata setelan terhadap batas atasnya).</p></div>
         <div><div class="grafik" id="g-sim-pareto"></div></div></div>
@@ -2560,7 +2564,7 @@ fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
         <div class="dua"><div>
           <div class="kendali"><label for="in-q">Cari komoditas</label><input type="search" id="in-q" value="${esc(S.scenFilter)}"></div>
           <div class="kendali"><label for="in-c">Komponen inflasi</label><select id="in-c"><option value="ALL">Semua komponen</option>${['VF', 'AP', 'CORE'].map(c => `<option value="${c}"${S.scenCls === c ? ' selected' : ''}>${esc(U.KLS[c])}</option>`).join('')}</select></div>
-          <div class="kendali"><label for="in-rho">Porsi perubahan harga ikan di konsumen yang ikut dirasakan nelayan (<i>pass-through</i>) <span class="nilai" id="v-rho"></span></label><input type="range" id="in-rho" min="0" max="1" step="0.05" value="${S.rho}"><p class="catatan" id="rho-cat"></p></div>
+          <div class="kendali"><label for="in-rho">Porsi perubahan harga ikan di konsumen yang ikut dirasakan nelayan (<i>pass-through</i>) <span class="nilai" id="v-rho"></span></label><input type="range" id="in-rho" min="0" max="1" step="0.05" value="${S.rho}"><p class="catatan">Artinya: bagian dari perubahan harga ikan di pasar (dalam rupiah) yang ikut mengubah harga yang diterima nelayan. 100 persen berarti seluruh kenaikan atau penurunan harga di pasar sampai ke nelayan; 0 persen berarti seluruhnya berhenti di pedagang perantara. Karena harga di tingkat nelayan hanya sekitar 65 persen harga konsumen, perubahan dalam persen di tingkat nelayan bisa lebih besar.</p><p class="catatan" id="rho-cat"></p></div>
           <div class="tabel-wadah editor-komoditas" id="scen-list"></div></div>
           <div id="scen-out"></div></div>`;
       box.dataset.built = '1';
