@@ -56,6 +56,18 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--garis)
   .panah svg { transform: rotate(90deg); width: 40px; }
 }
 </style>
+<script>
+/* tautan antarmodul memakai alamat lengkap situs agar tidak bergantung pada garis miring di akhir alamat;
+   saat berkas dibuka langsung dari komputer (file://), tautan kembali memakai jalur relatif */
+(function () {
+  var p = location.pathname;
+  if (location.protocol !== 'file:' && !/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) { location.replace(p + '/' + location.search + location.hash); return; }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-lokal]');
+    if (a && location.protocol === 'file:') a.setAttribute('href', a.getAttribute('data-lokal'));
+  }, true);
+})();
+</script>
 </head>
 <body>
 <div class="bungkus">
@@ -81,7 +93,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--garis)
       <li>Sebaran harga produsen antarkabupaten beserta uji <i>robustness</i> (ketahanan hasil)</li>
       <li>Alokasi pengadaan dan peta arus pasokan tiga dimensi</li>
     </ul>
-    <a class="buka" href="aplikasi/index.html">Buka Modul 1</a>
+    <a class="buka" href="https://barata90.github.io/simpul-sultra/aplikasi/" data-lokal="aplikasi/index.html">Buka Modul 1</a>
   </article>
 
   <div class="panah" aria-hidden="true">
@@ -104,7 +116,7 @@ footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--garis)
       <li>Sasaran inflasi diterjemahkan menjadi arahan harga per komoditas</li>
       <li>Pasar ikan sebagai sistem dinamis dan optimasi kebijakan multi objektif (<i>multi-objective optimization</i>)</li>
     </ul>
-    <a class="buka" href="inflasi/index.html">Buka Modul 2</a>
+    <a class="buka" href="https://barata90.github.io/simpul-sultra/inflasi/" data-lokal="inflasi/index.html">Buka Modul 2</a>
   </article>
 </section>
 

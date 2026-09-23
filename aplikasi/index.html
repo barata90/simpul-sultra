@@ -386,14 +386,26 @@ footer li{margin-bottom:3px}
 .arus-teratas i{display:inline-block; width:14px; height:4px; border-radius:2px}
 .arus-teratas b{font-family:var(--angka); font-weight:500; color:var(--tinta)}
 </style>
+<script>
+/* tautan antarmodul memakai alamat lengkap situs agar tidak bergantung pada garis miring di akhir alamat;
+   saat berkas dibuka langsung dari komputer (file://), tautan kembali memakai jalur relatif */
+(function () {
+  var p = location.pathname;
+  if (location.protocol !== 'file:' && !/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) { location.replace(p + '/' + location.search + location.hash); return; }
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[data-lokal]');
+    if (a && location.protocol === 'file:') a.setAttribute('href', a.getAttribute('data-lokal'));
+  }, true);
+})();
+</script>
 </head>
 <body>
 <div class="bungkus">
 
 <nav class="modul-simpul" aria-label="Modul SIMPUL">
-  <a class="merek" href="../index.html">SIMPUL Sulawesi Tenggara</a>
-  <a href="../aplikasi/index.html" aria-current="page"><span>Modul 1</span>Pasar: friksi dan pencocokan</a>
-  <a href="../inflasi/index.html"><span>Modul 2</span>Inflasi: nowcast, sasaran, kemiskinan</a>
+  <a class="merek" href="https://barata90.github.io/simpul-sultra/" data-lokal="../index.html">SIMPUL Sulawesi Tenggara</a>
+  <a href="https://barata90.github.io/simpul-sultra/aplikasi/" data-lokal="../aplikasi/index.html" aria-current="page"><span>Modul 1</span>Pasar: friksi dan pencocokan</a>
+  <a href="https://barata90.github.io/simpul-sultra/inflasi/" data-lokal="../inflasi/index.html"><span>Modul 2</span>Inflasi: nowcast, sasaran, kemiskinan</a>
 </nav>
 
 <header>
@@ -678,7 +690,7 @@ footer li{margin-bottom:3px}
       <p style="margin-top:8px">Berkas pengolahan lengkap beserta notebook dan data tersedia di
         <a href="https://github.com/barata90/simpul-sultra">github.com/barata90/simpul-sultra</a>. Dampak
         pencocokan terhadap inflasi dan kemiskinan dapat disimulasikan pada
-        <a href="../inflasi/index.html">Modul 2 SIMPUL Inflasi</a>.</p>
+        <a href="https://barata90.github.io/simpul-sultra/inflasi/" data-lokal="../inflasi/index.html">Modul 2 SIMPUL Inflasi</a>.</p>
     </div>
   
   </div>
