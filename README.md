@@ -85,8 +85,8 @@ simpul-sultra/
 │   ├── 01_pengolahan_utama.ipynb                 Naskah: lapis 1, 2, dan 3 serta tangga nilai perikanan
 │   ├── 02_kalibrasi_parameter.ipynb              Naskah: penggantian asumsi dengan angka resmi dan kepekaan
 │   ├── 03_pemutakhiran_data.ipynb                Naskah: data produksi 2024, sebaran harga produsen, alokasi
-│   ├── 1.Analisis_Forkestra2026_Sultra (olah).ipynb                   Pengembangan: friksi, penyerapan, kerangka simulasi
-│   ├── 2.Simulasi_Inflasi_Kemiskinan_SADDSO_Sultra (olah).ipynb       Pengembangan: nowcast, arahan harga, perencana kemiskinan
+│   ├── 1.Analisis_Forkestra2026_Sultra (olah).ipynb                   Pengembangan: friksi, penyerapan permintaan, kerangka simulasi
+│   ├── 2.Simulasi_Inflasi_Kemiskinan_SADDSO_Sultra (olah).ipynb       Pengembangan: *nowcast*, arahan harga, perencana kemiskinan
 │   ├── 3.Satelit_GEE_Forkestra2026_Sultra (olah).ipynb                Pengembangan: indikator citra satelit
 │   ├── 4.Analisis_Kabkota_Forkestra2026_Sultra (olah).ipynb           Pengembangan: dampak per kabupaten dan kota
 │   └── 5.Diagram_Sistem_Dinamis_Forkestra2026_Sultra (olah).ipynb     Pengembangan: diagram sebab-akibat
@@ -98,7 +98,7 @@ Angka pada naskah bersumber dari notebook 01 sampai 03. Notebook 1 sampai 5 adal
 untuk Modul 2 dan dapat memakai asumsi yang berbeda. Contohnya, notebook 1 menghitung kebutuhan
 ikan program 4.899 ton per tahun karena memakai protein hewani 17,5 gram per porsi (sekitar 94
 gram ikan utuh), sedangkan naskah memakai 100 gram ikan utuh (5.196 ton). Kedua nilai berada di
-dalam rentang standar gizi 81 sampai 108 gram yang diuji pada kisi kepekaan naskah.
+dalam rentang standar gizi 81 sampai 108 gram yang diuji pada *sensitivity grid* (tabel kepekaan) naskah.
 
 ---
 
@@ -106,18 +106,18 @@ dalam rentang standar gizi 81 sampai 108 gram yang diuji pada kisi kepekaan nask
 
 | Temuan atau rekomendasi Modul 1 | Dipakai di Modul 2 |
 |---|---|
-| Friksi struktural setara 5,29 persen harga eceran, bersumber dari biaya angkut | Menu Pasar ikan: penurunan margin distribusi melalui logistik dan rantai dingin |
-| Permintaan terjamin Program Makan Bergizi Gratis dapat dipenuhi dari dalam provinsi | Menu Pasar ikan: tambahan penyerapan permintaan |
+| Friksi struktural setara 5,29 persen harga eceran, bersumber dari biaya angkut | Menu Pasar ikan: penurunan margin distribusi melalui logistik dan rantai dingin (*cold chain*) |
+| Permintaan yang pasti, seperti MBG, dapat dipenuhi dari dalam provinsi | Menu Pasar ikan: tambahan penyerapan permintaan dari MBG, industri pengolahan, horeka, serta perdagangan antarpulau dan ekspor |
 | Keterbukaan harga produsen antarkabupaten | Menu Input data: harga 18 jenis ikan per kota IHK dan di tingkat nelayan |
 | Nilai Rp136,3 miliar per tahun dapat tertahan pada produsen | Dampak pada nilai tukar nelayan dan penduduk miskin per kabupaten dan kota |
-| Ketahanan kesimpulan diuji melalui kisi kepekaan | Menu Uji ketahanan: akurasi nowcast, uji mundur, penapisan Morris, kalibrasi kemiskinan |
+| Ketahanan kesimpulan diuji dengan *sensitivity grid* (tabel kepekaan) | Menu Uji ketahanan: akurasi *nowcast*, *backtest* (pengujian pada data masa lalu), *Morris screening* (penyaringan parameter paling berpengaruh), kalibrasi kemiskinan |
 
 ---
 
 ## Cara menjalankan
 
 Notebook disusun untuk Google Colab. Notebook 01 sampai 03 dijalankan berurutan, dan setiap
-tahap membaca arsip keluaran tahap sebelumnya. Notebook 1 sampai 5 juga dijalankan berurutan;
+tahap membaca arsip output tahap sebelumnya. Notebook 1 sampai 5 juga dijalankan berurutan;
 notebook 3 memerlukan akun Google Earth Engine.
 
 Kedua aplikasi berupa satu berkas HTML tanpa pemasangan dan seluruh perhitungannya dijalankan

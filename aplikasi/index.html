@@ -380,8 +380,11 @@ footer li{margin-bottom:3px}
 .modul-simpul a.merek{padding-left:0; font-weight:700; color:var(--tinta, #0E242B); letter-spacing:.02em; margin-right:auto}
 @media (max-width:640px){ .modul-simpul a{padding:8px 10px 9px; font-size:13px} .modul-simpul a.merek{flex-basis:100%; padding:6px 0 2px; border-bottom:0} }
 
-.catatan-koreksi{border-left:3px solid var(--pasir); padding:2px 0 2px 12px}
-.catatan-koreksi b{font-family:var(--angka); font-weight:500}
+.arus-teratas{list-style:none; margin:10px 0 4px; padding:0; display:flex; flex-wrap:wrap; gap:4px 18px; font-size:13px; color:var(--tinta2)}
+.arus-teratas li{display:flex; align-items:center; gap:6px}
+.arus-teratas li.judul-arus{flex-basis:100%; font-weight:600; color:var(--tinta)}
+.arus-teratas i{display:inline-block; width:14px; height:4px; border-radius:2px}
+.arus-teratas b{font-family:var(--angka); font-weight:500; color:var(--tinta)}
 </style>
 </head>
 <body>
@@ -402,7 +405,7 @@ footer li{margin-bottom:3px}
     Persoalan pangan di provinsi ini bukan kekurangan produksi maupun kekurangan modal,
     melainkan ketiadaan mekanisme pencocokan antara produksi yang tersebar di tujuh belas
     kabupaten dengan permintaan yang sudah tersedia. Geser parameter di sebelah kiri untuk
-    menguji sendiri pernyataan tersebut, dan putar peta tiga dimensi pada lembar pertama untuk melihat
+    menguji sendiri pernyataan tersebut, dan putar peta tiga dimensi pada tab pertama untuk melihat
     arus pengadaan yang dituntut oleh pilihan itu.
   </p>
   <div class="jangkar">
@@ -420,7 +423,7 @@ footer li{margin-bottom:3px}
   <aside class="panel" aria-label="Parameter simulasi">
     <h2>Parameter</h2>
     <p class="ket">Seluruh angka pada halaman ini dihitung ulang setiap kali parameter digeser.
-      Nilai awal adalah nilai naskah versi koreksi 23 September 2026.</p>
+      Nilai awal adalah nilai yang dipakai dalam naskah.</p>
 
     <div class="kendali">
       <div class="baris"><label for="pPenerima">Penerima manfaat</label><output id="oPenerima"></output></div>
@@ -487,9 +490,10 @@ footer li{margin-bottom:3px}
       <p class="pengantar">Daratan pada peta ini adalah batas administrasi tujuh belas kabupaten dan
         kota, dan setiap batang berdiri di wilayahnya masing masing: tingginya mengikuti besaran yang
         dipilih di bawah gambar, lebarnya mengikuti jumlah penduduk. Lintasan yang melayang adalah
-        perpindahan ikan yang harus dijadwalkan agar seluruh dapur terlayani. Lintasan hijau kebiruan
+        perpindahan ikan yang harus dijadwalkan agar seluruh dapur terlayani. Lintasan biru
         bergerak di dalam satu gugus geografis, lintasan merah menyeberang antargugus, dan lintasan
-        oker datang dari luar provinsi. Seret untuk memutar, gulir untuk memperbesar, dan arahkan
+        ungu datang dari luar provinsi. Titik yang bergerak menunjukkan arah pengiriman dari
+        wilayah pengirim ke wilayah penerima. Seret untuk memutar, gulir untuk memperbesar, dan arahkan
         penunjuk ke sebuah wilayah untuk membaca rinciannya.</p>
       <div class="kisi-angka" id="kartuPeta"></div>
       <div class="bidang">
@@ -504,9 +508,9 @@ footer li{margin-bottom:3px}
           <div class="tip3d" id="tipPeta" hidden></div>
         </div>
         <div class="kunci3d">
-          <span><i style="background:#79ADAB"></i>Lintasan dalam satu gugus</span>
-          <span><i style="background:#AE4429"></i>Lintasan menyeberang gugus</span>
-          <span><i style="background:#B08A21"></i>Lintasan dari luar provinsi</span>
+          <span><i style="background:#2563EB"></i>Lintasan dalam satu gugus</span>
+          <span><i style="background:#E11D48"></i>Lintasan menyeberang gugus</span>
+          <span><i style="background:#7C3AED"></i>Lintasan dari luar provinsi</span>
           <span><i style="background:#14555F"></i>Wilayah gugus kepulauan</span>
           <span><i style="background:#B08A21"></i>Wilayah gugus daratan</span>
         </div>
@@ -524,17 +528,18 @@ footer li{margin-bottom:3px}
           <button type="button" class="kecil" data-aksi="jauh" aria-label="Perkecil">&minus;</button>
           <button type="button" data-aksi="ulang">Atur ulang tampilan</button>
         </div>
-        <p class="catatan">Tebal garis tidak dapat dibedakan pada peramban, sehingga besar arus
-          dinyatakan melalui kepekatan warna. Hanya empat puluh empat lintasan terbesar yang
-          digambar agar peta tetap terbaca; seluruh nilai lengkap tersedia pada lembar
-          Pencocokan.</p>
+        <ol class="arus-teratas" id="arusTeratas" aria-live="polite"></ol>
+        <p class="catatan">Cara membaca animasi: titik bergerak dari wilayah pengirim menuju wilayah
+          penerima, dan kerucut di ujung lintasan menandai penerima. Makin rapat titik dan makin
+          pekat garis, makin besar tonase yang dikirim. Hanya empat puluh empat lintasan terbesar
+          yang digambar agar peta tetap terbaca; seluruh nilai tersedia pada tab Pencocokan.</p>
       </div>
     </section>
 
     <!-- ---------- 01 RINGKASAN ---------- -->
     <section class="lembar" id="l0" role="tabpanel" aria-labelledby="t0">
       <h3 class="tajuk">Keadaan pada parameter yang sedang dipilih</h3>
-      <p class="pengantar">Empat besaran berikut adalah keluaran pokok simulasi. Ketiganya dihitung
+      <p class="pengantar">Empat besaran berikut adalah output pokok simulasi. Ketiganya dihitung
         dari data produksi Kementerian Kelautan dan Perikanan tahun 2024 dan proyeksi penduduk
         Badan Pusat Statistik tahun 2026, bukan dari angka yang ditetapkan lebih dahulu.</p>
       <div class="kisi-angka" id="kartuRingkas"></div>
@@ -550,9 +555,10 @@ footer li{margin-bottom:3px}
     <section class="lembar" id="l1" role="tabpanel" aria-labelledby="t1">
       <h3 class="tajuk">Dua jenis friksi yang menuntut kebijakan berlawanan</h3>
       <p class="pengantar">Selisih harga antara Kendari dan Baubau diuraikan menjadi komponen
-        permanen dan komponen sementara melalui model <em>unobserved components</em> (komponen tak
-        teramati). Pangsa ragam permanen yang tinggi menandakan biaya angkut yang menetap,
-        sedangkan pangsa yang rendah menandakan kegagalan koordinasi. Geser ambang pada panel
+        permanen dan komponen sementara melalui <em>unobserved components model</em> (model yang memisahkan
+        pergerakan harga menjadi bagian permanen dan bagian sementara). Pangsa ragam permanen yang
+        tinggi menandakan biaya angkut yang menetap, sedangkan pangsa yang rendah menandakan friksi
+        pencocokan (<em>coordination failure</em>), yaitu pembeli dan penjual yang belum saling terhubung. Geser ambang pada panel
         parameter untuk melihat perubahan penggolongan.</p>
       <div class="bidang">
         <p class="judul">Peta taksonomi friksi</p>
@@ -623,7 +629,7 @@ footer li{margin-bottom:3px}
         </div>
       </div>
       <div class="bidang">
-        <p class="judul">Kisi kepekaan kebutuhan terhadap produksi provinsi</p>
+        <p class="judul"><em>Sensitivity grid</em> (tabel kepekaan) kebutuhan terhadap produksi provinsi</p>
         <p class="subjudul">Nilai dalam persen produksi perikanan tangkap 2024</p>
         <div id="gbrKisi"></div>
       </div>
@@ -666,7 +672,7 @@ footer li{margin-bottom:3px}
     </div>
     <div>
       <h5>Cara membaca</h5>
-      <p>Setiap lembar menyediakan bacaan otomatis yang disusun dari nilai numerik hasil
+      <p>Setiap tab menyediakan bacaan otomatis yang disusun dari nilai numerik hasil
         perhitungan, bukan dari teks yang disiapkan lebih dahulu. Apabila sebuah pengujian tidak
         menghasilkan bukti yang cukup, bacaan akan menyatakan hal itu secara terbuka.</p>
       <p style="margin-top:8px">Berkas pengolahan lengkap beserta notebook dan data tersedia di
@@ -675,16 +681,6 @@ footer li{margin-bottom:3px}
         <a href="../inflasi/index.html">Modul 2 SIMPUL Inflasi</a>.</p>
     </div>
   
-    <div class="catatan-koreksi">
-      <h5>Catatan koreksi 23 September 2026</h5>
-      <p>Pada pengolahan untuk naskah awal, produksi Kota Baubau (18.705,5 ton) terlewat karena
-      penulisan nama wilayah pada data KKP berbeda. Setelah dikoreksi, kebutuhan ikan program menjadi
-      <b>1,91 persen</b> produksi (naskah awal 2,05 persen), seluruh kebutuhan terpenuhi dari dalam
-      provinsi mulai batas serapan <b>1,91 persen</b>, atau baris 2,0 persen pada tabel naskah (naskah awal 2,5 persen), perpindahan
-      antarkabupaten <b>1.547 ton</b> (naskah awal 1.595 ton), dan indeks ketidaksesuaian ruang
-      <b>0,3125</b> (naskah awal 0,3503). Nilai yang sampai ke produsen tetap Rp136,3 miliar dan
-      kesimpulan naskah tidak berubah. Aplikasi ini sejak awal memuat data Baubau yang benar.</p>
-    </div>
   </div>
 </footer>
 
@@ -827,7 +823,7 @@ function titikJenuh(kebutuhan) {
    ================================================================== */
 function golongkan(pi) {
   if (pi >= K.ambang) return { kode: "s", nama: "Friksi struktural" };
-  if (pi <= K.ambang * 0.4) return { kode: "k", nama: "Kegagalan koordinasi" };
+  if (pi <= K.ambang * 0.4) return { kode: "k", nama: "Friksi pencocokan" };
   return { kode: "c", nama: "Antara" };
 }
 
@@ -922,7 +918,7 @@ function gbrFriksi() {
   });
 
   const kx = kiri + lw + 26;
-  [["Friksi struktural", "s"], ["Antara", "c"], ["Kegagalan koordinasi", "k"]].forEach((p, i) => {
+  [["Friksi struktural", "s"], ["Antara", "c"], ["Friksi pencocokan", "k"]].forEach((p, i) => {
     const y = atas + 14 + i * 21;
     s.appendChild(buat("rect", { x: kx, y: y - 8, width: 11, height: 11, fill: warna[p[1]], rx: 1 }));
     const t = buat("text", { x: kx + 17, y: y + 1, class: "lbl" });
@@ -1047,7 +1043,7 @@ function gbrKisi() {
   const lebarSel = (W - kiri - 24) / gram.length;
   const H = atas + frek.length * tinggiSel + 54;
   const s = buat("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
-  s.appendChild(buat("title")).textContent = "Kisi kepekaan kebutuhan terhadap produksi provinsi";
+  s.appendChild(buat("title")).textContent = "Sensitivity grid kebutuhan terhadap produksi provinsi";
 
   const nilai = frek.map(f => gram.map(g =>
     K.penerima * K.hari * f * (g / 1000) / 1000 / TOTAL_TON * 100));
@@ -1109,7 +1105,7 @@ function gbrKisi() {
 
 /* ==================================================================
    3B. TAMPILAN TIGA DIMENSI
-   Dua tampilan WebGL yang memakai keluaran mesin yang sama dengan
+   Dua tampilan WebGL yang memakai output mesin yang sama dengan
    lembar dua dimensi. Tidak ada angka baru yang diperkenalkan di sini.
    Daratan ditarik naik dari batas administrasi resmi, dan setiap batang
    berdiri di titik pusat cincin terbesar wilayahnya, memakai proyeksi
@@ -1140,6 +1136,7 @@ const ADA_WEBGL = (function () {
 
 const W3 = {
   pulau: 0x14555f, darat: 0xb08a21, karang: 0xae4429, dangkal: 0x79adab,
+  arusGugus: 0x2563eb, arusSeberang: 0xe11d48, arusLuar: 0x7c3aed,
   tinta: 0x0e242b, kertas: 0xe6edea, laut: 0xd6e3e0,
 };
 
@@ -1230,7 +1227,7 @@ const PETA3D = (function () {
     if (!wadah) return;
     if (!ADA_WEBGL) {
       wadah.innerHTML = '<div class="tanpa3d">Peramban ini tidak menyediakan WebGL, ' +
-        'sehingga tampilan tiga dimensi tidak dapat digambar. Seluruh angka dan lembar ' +
+        'sehingga tampilan tiga dimensi tidak dapat digambar. Seluruh angka dan tab ' +
         'lain tetap berjalan seperti biasa.</div>';
       return;
     }
@@ -1458,7 +1455,7 @@ const PETA3D = (function () {
   }
 
   function bangunLintasan() {
-    lintasan.forEach(b => { b.garis.geometry.dispose(); b.garis.material.dispose(); grupLintasan.remove(b.garis); });
+    lintasan.forEach(b => { b.garis.geometry.dispose(); b.garis.material.dispose(); grupLintasan.remove(b.garis); if (b.kerucut) { b.kerucut.geometry.dispose(); b.kerucut.material.dispose(); grupLintasan.remove(b.kerucut); } });
     lintasan = [];
     if (partikel) { partikel.geometry.dispose(); partikel.material.dispose(); scene.remove(partikel); partikel = null; }
     if (!hSimpan || !pakaiLintasan) { return; }
@@ -1473,7 +1470,7 @@ const PETA3D = (function () {
       const tengah = new THREE.Vector3((A.x + B.x) / 2, Math.max(A.y, B.y) + 6 + jauh * 0.36, (A.z + B.z) / 2);
       const kurva = new THREE.QuadraticBezierCurve3(A, tengah, B);
       const tk = kurva.getPoints(46);
-      const wr = a.jenis === "gugus" ? W3.dangkal : a.jenis === "seberang" ? W3.karang : W3.darat;
+      const wr = a.jenis === "gugus" ? W3.arusGugus : a.jenis === "seberang" ? W3.arusSeberang : W3.arusLuar;
       const garis = new THREE.Line(
         new THREE.BufferGeometry().setFromPoints(tk),
         new THREE.LineBasicMaterial({
@@ -1481,25 +1478,41 @@ const PETA3D = (function () {
           opacity: 0.16 + 0.6 * Math.min(a.ton / besar, 1),
         }));
       grupLintasan.add(garis);
-      lintasan.push({ garis, tk, ton: a.ton, jenis: a.jenis, wr });
+      /* kerucut penanda arah di ujung lintasan, besarnya mengikuti tonase */
+      const ujung = kurva.getPoint(0.97), arah = kurva.getTangent(0.97).normalize();
+      const sk = 0.55 + 0.75 * Math.min(a.ton / besar, 1);
+      const kerucut = new THREE.Mesh(new THREE.ConeGeometry(0.42 * sk, 1.25 * sk, 12),
+        new THREE.MeshBasicMaterial({ color: wr, transparent: true, opacity: 0.95 }));
+      kerucut.position.copy(ujung);
+      kerucut.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arah);
+      grupLintasan.add(kerucut);
+      lintasan.push({ garis, kerucut, tk, ton: a.ton, jenis: a.jenis, wr, dari: a.a, ke: a.b });
     });
+    const daftarTeratas = el("#arusTeratas");
+    if (daftarTeratas) {
+      const namaJenis = { gugus: "dalam satu gugus", seberang: "menyeberang gugus", luar: "dari luar provinsi" };
+      daftarTeratas.innerHTML = lintasan.length
+        ? "<li class=\"judul-arus\">Lima arus terbesar</li>" + lintasan.slice(0, 5).map(b =>
+          `<li><i style="background:#${new THREE.Color(b.wr).getHexString()}"></i>${b.dari} ke ${b.ke}: <b>${nf(b.ton)} ton</b> per tahun (${namaJenis[b.jenis] || b.jenis})</li>`).join("")
+        : "";
+    }
 
     if (lintasan.length) {
-      const N = Math.min(320, lintasan.length * 8);
+      const totalTon = lintasan.reduce((s, b) => s + b.ton, 0) || 1;
+      pInfo = [];
+      lintasan.forEach(b => {
+        const k = Math.max(2, Math.round(420 * b.ton / totalTon));
+        for (let q = 0; q < k; q++) pInfo.push({ b, t: q / k, v: 0.14 });
+      });
+      const N = pInfo.length;
       const pos = new Float32Array(N * 3), wrn = new Float32Array(N * 3);
       const c = new THREE.Color();
-      pInfo = [];
-      for (let i = 0; i < N; i++) {
-        const b = lintasan[i % lintasan.length];
-        pInfo.push({ b, t: Math.random(), v: 0.10 + Math.random() * 0.10 });
-        c.setHex(b.wr);
-        wrn[i * 3] = c.r; wrn[i * 3 + 1] = c.g; wrn[i * 3 + 2] = c.b;
-      }
+      pInfo.forEach((o, i) => { c.setHex(o.b.wr); wrn[i * 3] = c.r; wrn[i * 3 + 1] = c.g; wrn[i * 3 + 2] = c.b; });
       const g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
       g.setAttribute("color", new THREE.BufferAttribute(wrn, 3));
       partikel = new THREE.Points(g, new THREE.PointsMaterial({
-        size: 2.1, vertexColors: true, transparent: true, opacity: 0.92, sizeAttenuation: true,
+        size: 2.4, vertexColors: true, transparent: true, opacity: 0.95, sizeAttenuation: true,
       }));
       scene.add(partikel);
     }
@@ -1899,7 +1912,7 @@ function bacaFriksi() {
       tidak kembali ke satu nilai tetap.`);
   }
   if (ko.length) {
-    b.push(`Kelompok kegagalan koordinasi terdiri atas ${T(ko.map(d => d.k).join(", "))}.
+    b.push(`Kelompok friksi pencocokan (<em>coordination failure</em>), yaitu pembeli dan penjual yang belum saling terhubung, terdiri atas ${T(ko.map(d => d.k).join(", "))}.
       Sebanyak ${A(koStas)} dari ${A(ko.length)} komoditas pada kelompok ini menolak hipotesis
       akar unit pada taraf lima persen, sehingga selisih harganya kembali ke satu nilai tetap
       dan karena itu tidak berasal dari biaya angkut.`);
@@ -1955,7 +1968,7 @@ function bacaSebaran() {
       ${T(per[per.length - 1][0])} sebesar ${A(rp(per[per.length - 1][1][0]))}.`);
   }
 
-  b.push(`Sebaran ini telah diuji terhadap dua penjelasan tandingan. Simulasi tiga ribu ulangan
+  b.push(`Sebaran ini telah melewati uji <em>robustness</em> (ketahanan hasil) terhadap dua penjelasan lain. Simulasi tiga ribu ulangan
     menunjukkan pembulatan pelaporan hanya menghasilkan simpangan baku logaritma sebesar
     ${A("0,021")}, sehingga sebaran yang teramati ${A("14,2 kali")} lebih besar daripada yang
     dapat dijelaskan pembulatan. Kekuatan tawar pembeli terbukti nyata namun hanya menjelaskan
@@ -2000,10 +2013,10 @@ function bacaAlokasi(h) {
     ${A(nf(h.sendiri) + " ton")}, sedangkan ${A(nf(h.dalamGugus) + " ton")} berpindah di dalam
     satu gugus dan ${A(nf(h.seberang) + " ton")} harus menyeberang antargugus.`);
 
-  b.push(`Keluaran yang paling berguna bagi penyusun kebijakan adalah beban perpindahan, yaitu
+  b.push(`Output yang paling berguna bagi penyusun kebijakan adalah beban perpindahan, yaitu
     ${T(nf(h.antar) + " ton")} atau ${A(pct(h.pangsaAntar * 100, 1))} dari pasokan setempat yang
     harus melintasi batas kabupaten. Angka itulah yang menentukan kebutuhan jadwal pelayaran dan
-    sarana rantai dingin. Nilai yang sampai ke produsen mencapai ${A(rp(h.nilai))}.`);
+    sarana rantai dingin (<em>cold chain</em>). Nilai yang sampai ke produsen mencapai ${A(rp(h.nilai))}.`);
 
   const jenuh = titikJenuh(h.kebutuhan);
   if (K.phi > jenuh * 1.05 && h.pangsa >= 0.999) {

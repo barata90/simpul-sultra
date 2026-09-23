@@ -195,6 +195,10 @@ footer p { max-width: 110ch; }
 header.kepala .modul-simpul { margin-top: -.6rem; }
 footer a { color: var(--laut); }
 
+fieldset.sumber-permintaan { border: 1px solid var(--garis); border-radius: 4px; padding: .3rem .9rem .5rem; margin: .6rem 0; }
+fieldset.sumber-permintaan legend { font-size: .92rem; padding: 0 .3rem; }
+fieldset.sumber-permintaan .kendali { margin: .45rem 0; }
+
 </style>
 </head>
 <body>
@@ -1102,10 +1106,10 @@ footer a { color: var(--laut); }
 
   /* ---------------------------------------------------------------- perencana SA-DDSO */
   E.LEVERS = [
-    { key: 'f', label: 'Penurunan margin distribusi ikan (logistik, rantai dingin)', lo: 0, hi: 0.30, fmt: v => (100 * v).toFixed(1) + '%' },
+    { key: 'f', label: 'Penurunan margin distribusi ikan (logistik dan rantai dingin atau cold chain)', lo: 0, hi: 0.30, fmt: v => (100 * v).toFixed(1) + '%' },
     { key: 's', label: 'Operasi pasar ikan (bagian dari pasokan)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1) + '%' },
-    { key: 'a', label: 'Tambahan penyerapan permintaan ikan (MBG, industri pengolahan)', lo: 0, hi: 0.15, fmt: v => (100 * v).toFixed(1) + '%' },
-    { key: 'g', label: 'Moderasi harga pangan lain per bulan', lo: 0, hi: 0.004, fmt: v => (100 * v).toFixed(2) + '% per bulan' },
+    { key: 'a', label: 'Tambahan penyerapan permintaan ikan (MBG, industri pengolahan, horeka, antarpulau dan ekspor)', lo: 0, hi: 0.15, fmt: v => (100 * v).toFixed(1) + '%' },
+    { key: 'g', label: 'Pengendalian harga pangan lain per bulan', lo: 0, hi: 0.004, fmt: v => (100 * v).toFixed(2) + '% per bulan' },
     { key: 'tau', label: 'Transfer terarah (bagian garis kemiskinan per orang miskin)', lo: 0, hi: 0.10, fmt: v => (100 * v).toFixed(1) + '%' }
   ];
   E.planner = function (M, o) {
@@ -1331,7 +1335,7 @@ footer a { color: var(--laut); }
   const S = {
     mid: 2.5, dev: 1.0, T: null, region: '7400', tab: 'nowcast', targetManual: false,
     cls: { VF: true, AP: true, CORE: false }, targetMode: 'edge', showAll: false,
-    scen: {}, scenFilter: '', scenCls: 'ALL', rho: 0,
+    scen: {}, scenFilter: '', scenCls: 'ALL', rho: 0.5,
     kejut: { VF: 0, AP: 0, CORE: 0 }, pakaiRinci: false,
     sd: { f: 0.15, s: 0, a: 0.08, g: 0 }, sdPrm: {},
     plan: { select: 'all', reduction: 10000, rhoT: 0.6, w: [1, 1, 1, 1] }, planRes: null, planUnc: null,
@@ -1365,11 +1369,11 @@ footer a { color: var(--laut); }
     MAE: { s: 'MAE', n: 'Mean absolute error, rata-rata kesalahan absolut', u: 'poin persen' },
     RMSE: { s: 'RMSE', n: 'Root mean squared error, akar rata-rata kuadrat kesalahan', u: 'poin persen' },
     R2: { s: 'R2', n: 'Koefisien determinasi', u: '0 sampai 1' },
-    NRMSE: { s: 'NRMSE', n: 'RMSE dibagi rentang nilai keluaran', u: '0 sampai 1' },
+    NRMSE: { s: 'NRMSE', n: 'RMSE dibagi rentang nilai output', u: '0 sampai 1' },
     DM: { s: 'DM', n: 'Statistik uji Diebold-Mariano dengan koreksi sampel kecil Harvey, Leybourne, dan Newbold', u: 'tanpa satuan', k: 'Nilai negatif berarti model lebih akurat daripada pembandingnya.' },
     PVAL: { s: 'Nilai p', n: 'Peluang memperoleh selisih akurasi sebesar itu bila kedua model sebenarnya sama akurat', u: '0 sampai 1' },
-    MUSTAR: { s: 'mu*', n: 'Rata-rata nilai absolut efek elementer Morris', u: 'satuan keluaran bila parameter bergeser sepanjang rentangnya' },
-    SIGEE: { s: 'Simpangan efek', n: 'Simpangan baku efek elementer Morris', u: 'satuan keluaran', k: 'Nilai besar menandakan pengaruh nonlinear atau interaksi dengan parameter lain.' },
+    MUSTAR: { s: 'mu*', n: 'Rata-rata nilai absolut efek elementer Morris', u: 'satuan output bila parameter bergeser sepanjang rentangnya' },
+    SIGEE: { s: 'Simpangan efek', n: 'Simpangan baku efek elementer Morris', u: 'satuan output', k: 'Nilai besar menandakan pengaruh nonlinear atau interaksi dengan parameter lain.' },
     CI90: { s: 'Rentang 90 persen', n: 'Rentang yang memuat 90 persen hasil simulasi atau prediksi', u: 'mengikuti satuan kolom' },
     MBG: { s: 'MBG', n: 'Program Makan Bergizi Gratis', u: '' },
     TPID: { s: 'TPID', n: 'Tim Pengendalian Inflasi Daerah', u: '' },
@@ -2474,7 +2478,7 @@ footer a { color: var(--laut); }
       <div class="grafik" id="g-nc"></div>
       ${off ? `<div class="kotak"><b>Uji terhadap rilis resmi.</b> Estimasi struktural ${esc(mon(ext.period))} dari IHK empat kota IHK: IHK ${fmt(ext.estimate.gen)}, inflasi bulanan ${fmt(ext.estimate.mtm)} persen. Rilis resmi BPS: IHK ${fmt(off.ihk)}, inflasi bulanan ${fmt(off.mtm)} persen, inflasi tahunan ${fmt(off.yoy)} persen.</div>` : ''}
       <div class="dua">
-        <div><h3>Kinerja model pada uji mundur</h3><div class="tabel-wadah"><table><thead><tr><th>Model</th><th class="n">Bulan uji</th><th class="n">${ab('MAE')} model (poin persen)</th><th class="n">${ab('MAE')} pola musiman (poin persen)</th><th class="n">Bobot gabungan saat ini (0 sampai 1)</th></tr></thead><tbody>
+        <div><h3>Kinerja model pada <i>backtest</i> (pengujian pada data masa lalu)</h3><div class="tabel-wadah"><table><thead><tr><th>Model</th><th class="n">Bulan uji</th><th class="n">${ab('MAE')} model (poin persen)</th><th class="n">${ab('MAE')} pola musiman (poin persen)</th><th class="n">Bobot gabungan saat ini (0 sampai 1)</th></tr></thead><tbody>
           ${mdl.map(k => { const m = nc.models[k]; if (!m.ok) return `<tr><td>${esc(m.name)}</td><td class="n" colspan="4">Belum aktif: baru ${m.n} dari ${m.perlu || 24} bulan data yang dibutuhkan</td></tr>`; return `<tr><td>${esc(m.name)}</td><td class="n">${m.evalRows.length}</td><td class="n">${fmt(m.mae, 3)}</td><td class="n">${fmt(m.maeSeas, 3)}</td><td class="n">${k === 'E' ? '' : fmt(w[k], 3)}</td></tr>`; }).join('')}
           </tbody></table></div>
           ${ket(['MAE', 'PIHPS', 'IB'])}
@@ -2544,7 +2548,7 @@ footer a { color: var(--laut); }
         <div class="dua"><div>
           <div class="kendali"><label for="in-q">Cari komoditas</label><input type="search" id="in-q" value="${esc(S.scenFilter)}"></div>
           <div class="kendali"><label for="in-c">Komponen inflasi</label><select id="in-c"><option value="ALL">Semua komponen</option>${['VF', 'AP', 'CORE'].map(c => `<option value="${c}"${S.scenCls === c ? ' selected' : ''}>${esc(U.KLS[c])}</option>`).join('')}</select></div>
-          <div class="kendali"><label for="in-rho">Bagian perubahan harga ikan konsumen yang diteruskan ke nelayan <span class="nilai" id="v-rho"></span></label><input type="range" id="in-rho" min="0" max="1" step="0.05" value="${S.rho}"></div>
+          <div class="kendali"><label for="in-rho">Porsi perubahan harga ikan di konsumen yang ikut dirasakan nelayan (<i>pass-through</i>) <span class="nilai" id="v-rho"></span></label><input type="range" id="in-rho" min="0" max="1" step="0.05" value="${S.rho}"><p class="catatan" id="rho-cat"></p></div>
           <div class="tabel-wadah editor-komoditas" id="scen-list"></div></div>
           <div id="scen-out"></div></div>`;
       box.dataset.built = '1';
@@ -2594,12 +2598,18 @@ footer a { color: var(--laut); }
       return { label: x.name, v: x.contrib - base };
     }).sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 12);
     const posisi = sc.yoy > hi ? 'di atas rentang sasaran' : (sc.yoy < lo ? 'di bawah rentang sasaran' : 'di dalam rentang sasaran');
+    const adaIkan = Math.abs(dF) > 1e-9;
+    $('rho-cat').innerHTML = adaIkan
+      ? `Harga ikan segar di konsumen berubah ${fmt(100 * dF, 2)} persen; dengan <i>pass-through</i> ${fmt(100 * S.rho, 0)} persen, harga di tingkat nelayan berubah ${fmt(100 * (pRatio - 1), 2)} persen.`
+      : 'Penggeser ini baru berpengaruh bila ada perubahan harga ikan pada isian. Contoh: klik tombol "Ikan segar turun 5 persen", atau isi harga Tongkol, Layang, dan jenis ikan lain di daftar komoditas.';
     $('scen-out').innerHTML = `
       <p class="pernyataan">Inflasi tahunan ${esc(mon(S.T))} menjadi <b>${fmt(sc.yoy)} persen</b>, dibanding proyeksi dasar ${fmt(sc.yoyBase)} persen (selisih ${fmt(sc.yoy - sc.yoyBase, 2)} poin persen), ${posisi} ${fmt(lo, 1)} sampai ${fmt(hi, 1)} persen.</p>
       <div class="tabel-wadah"><table><tbody>
         <tr><td>Tambahan ${ab('ANDIL')} komponen bergejolak (poin persen)</td><td class="n">${fmt(sc.byCls.VF, 3)}</td></tr>
         <tr><td>Tambahan ${ab('ANDIL')} komponen diatur pemerintah (poin persen)</td><td class="n">${fmt(sc.byCls.AP, 3)}</td></tr>
         <tr><td>Tambahan ${ab('ANDIL')} komponen inti (poin persen)</td><td class="n">${fmt(sc.byCls.CORE, 3)}</td></tr>
+        <tr><td>Perubahan harga ikan segar di tingkat konsumen, rata-rata tertimbang (persen)</td><td class="n">${fmt(100 * dF, 2)}</td></tr>
+        <tr><td>Perubahan harga ikan di tingkat nelayan (persen)</td><td class="n">${fmt(100 * (pRatio - 1), 2)}</td></tr>
         <tr><td>Perubahan daya beli riil dibanding proyeksi dasar (persen)</td><td class="n">${fmt(-100 * (cpiR - 1), 3)}</td></tr>
         <tr><td>${ab('NTN')} (proyeksi dasar = 100)</td><td class="n">${fmt(ntn, 2)}</td></tr>
         <tr><td>Perubahan jumlah penduduk miskin Sulawesi Tenggara (orang)</td><td class="n ${so.tot < 0 ? 'turun' : 'naik'}">${fmt0(so.tot)}</td></tr></tbody></table></div>
@@ -2611,10 +2621,14 @@ footer a { color: var(--laut); }
   }
 
   /* ---------------------------------------------------------------- pasar ikan sebagai sistem dinamis */
-  const TUAS_SD = [{ k: 'f', lab: 'Penurunan margin distribusi (logistik dan rantai dingin)', max: 0.3, step: 0.01, m: 100, u: ' persen' },
+  const TUAS_SD = [{ k: 'f', lab: 'Penurunan margin distribusi (logistik dan rantai dingin atau <i>cold chain</i>)', max: 0.3, step: 0.01, m: 100, u: ' persen' },
     { k: 's', lab: 'Operasi pasar: pelepasan stok ikan', max: 0.1, step: 0.005, m: 100, u: ' persen pasokan' },
-    { k: 'a', lab: 'Tambahan penyerapan permintaan (MBG, industri pengolahan)', max: 0.15, step: 0.005, m: 100, u: ' persen permintaan' },
+    { k: 'a', lab: 'Tambahan penyerapan permintaan ikan dari berbagai sumber', max: 0.20, step: 0.0025, m: 100, u: ' persen permintaan', gabungan: true },
     { k: 'g', lab: 'Pengendalian harga pangan lain', max: 0.004, step: 0.0002, m: 100, u: ' persen per bulan', d: 2 }];
+  const SUMBER_A = [{ k: 'mbg', lab: 'Program Makan Bergizi Gratis (MBG)', awal: 0.04 },
+    { k: 'olah', lab: 'Industri pengolahan (hilirisasi)', awal: 0.02 },
+    { k: 'horeka', lab: 'Hotel, restoran, katering (horeka) dan pariwisata', awal: 0.01 },
+    { k: 'antar', lab: 'Perdagangan antarpulau dan ekspor', awal: 0.01 }];
   const PRM_SD = [{ k: 'eps_d', lab: 'Elastisitas harga permintaan ikan', min: -1.5, max: -0.2, step: 0.05 },
     { k: 'eps_s', lab: 'Respons kapasitas tangkap terhadap nilai tukar nelayan', min: 0.05, max: 1, step: 0.05 },
     { k: 'tau', lab: 'Jeda penyesuaian kapasitas tangkap (bulan)', min: 2, max: 18, step: 1 },
@@ -2622,23 +2636,30 @@ footer a { color: var(--laut); }
     { k: 'm0', lab: 'Pangsa margin dalam harga konsumen ikan', min: 0.15, max: 0.6, step: 0.01 }];
   function renderSD() {
     const box = $('sheet-sd'), Mm = U.M;
+    if (!S.sdA) { S.sdA = Object.fromEntries(SUMBER_A.map(q => [q.k, q.awal])); S.sd.a = SUMBER_A.reduce((a, q) => a + S.sdA[q.k], 0); }
     if (box.dataset.built !== '1') {
       box.innerHTML = `
         <h2>Pasar ikan sebagai sistem dinamis</h2>
         <p class="catatan">Geser instrumen kebijakan untuk melihat lintasan bulanan harga ikan, inflasi, dan kemiskinan dibanding proyeksi dasar. Hubungan sebab-akibatnya digambarkan lengkap pada menu Peta sistem. Bulan yang dilaporkan mengikuti bulan sasaran di bagian atas halaman.</p>
-        <div class="dua"><div><h3>Instrumen kebijakan</h3>${TUAS_SD.map(t => `<div class="kendali"><label for="sd-${t.k}">${esc(t.lab)} <span class="nilai" id="v-${t.k}"></span></label><input type="range" id="sd-${t.k}" min="0" max="${t.max}" step="${t.step}" value="${S.sd[t.k]}"></div>`).join('')}</div>
+        <div class="dua"><div><h3>Instrumen kebijakan</h3>${TUAS_SD.map(t => t.gabungan
+          ? `<fieldset class="sumber-permintaan"><legend>${t.lab} <span class="nilai" id="v-${t.k}"></span></legend>
+              <p class="catatan">Permintaan ikan tidak hanya datang dari MBG. Geser tiap sumber permintaan; totalnya menjadi tambahan penyerapan pada model.</p>
+              ${SUMBER_A.map(q => `<div class="kendali"><label for="sa-${q.k}">${esc(q.lab)} <span class="nilai" id="va-${q.k}"></span></label><input type="range" id="sa-${q.k}" min="0" max="0.05" step="0.0025" value="${S.sdA[q.k]}"></div>`).join('')}</fieldset>`
+          : `<div class="kendali"><label for="sd-${t.k}">${t.lab} <span class="nilai" id="v-${t.k}"></span></label><input type="range" id="sd-${t.k}" min="0" max="${t.max}" step="${t.step}" value="${S.sd[t.k]}"></div>`).join('')}</div>
         <div><details><summary>Parameter model (lanjutan)</summary><p class="catatan">Nilai awal adalah nilai yang dipakai model. Kepekaan hasil terhadap parameter ini diuji pada menu Uji ketahanan.</p>${PRM_SD.map(p => `<div class="kendali"><label for="pr-${p.k}">${esc(p.lab)} <span class="nilai" id="vp-${p.k}"></span></label><input type="range" id="pr-${p.k}" min="${p.min}" max="${p.max}" step="${p.step}" value="${S.sdPrm[p.k] != null ? S.sdPrm[p.k] : Mm.prm[p.k]}"></div>`).join('')}
           <div class="baris-tombol"><button type="button" class="tombol garis kecil" id="pr-reset">Kembalikan parameter awal</button></div></details></div></div>
         <div id="sd-out"></div>`;
       box.dataset.built = '1';
-      TUAS_SD.forEach(t => $('sd-' + t.k).addEventListener('input', e => { S.sd[t.k] = +e.target.value; sdLabels(); sdOutD(); }));
+      TUAS_SD.forEach(t => { if (!t.gabungan) $('sd-' + t.k).addEventListener('input', e => { S.sd[t.k] = +e.target.value; sdLabels(); sdOutD(); }); });
+      SUMBER_A.forEach(q => $('sa-' + q.k).addEventListener('input', e => { S.sdA[q.k] = +e.target.value; S.sd.a = SUMBER_A.reduce((a, r) => a + S.sdA[r.k], 0); sdLabels(); sdOutD(); }));
       PRM_SD.forEach(p => $('pr-' + p.k).addEventListener('input', e => { S.sdPrm[p.k] = +e.target.value; sdLabels(); sdOutD(); }));
       $('pr-reset').addEventListener('click', () => { S.sdPrm = {}; PRM_SD.forEach(p => { $('pr-' + p.k).value = U.M.prm[p.k]; }); sdLabels(); sdOut(); });
     }
     sdLabels(); sdOut();
   }
   function sdLabels() {
-    TUAS_SD.forEach(t => { $('v-' + t.k).textContent = fmt(S.sd[t.k] * t.m, t.d || 1) + t.u; });
+    TUAS_SD.forEach(t => { $('v-' + t.k).textContent = (t.gabungan ? 'total ' : '') + fmt(S.sd[t.k] * t.m, t.d || 1) + t.u; });
+    SUMBER_A.forEach(q => { $('va-' + q.k).textContent = fmt(100 * S.sdA[q.k], 2) + ' persen'; });
     PRM_SD.forEach(p => { $('vp-' + p.k).textContent = fmt(S.sdPrm[p.k] != null ? S.sdPrm[p.k] : U.M.prm[p.k], 2); });
   }
   const sdOutD = debounce(() => sdOut(), 120);
@@ -2666,8 +2687,8 @@ footer a { color: var(--laut); }
   }
 
   /* ---------------------------------------------------------------- peta sistem dinamis interaktif */
-  const MEK = { 'L1>M': 'Logistik dan rantai dingin menurunkan margin distribusi', 'M>C': 'Margin adalah bagian dari harga konsumen', 'P>C': 'Harga produsen diteruskan ke harga konsumen',
-    'C>DMD': 'Harga konsumen yang lebih tinggi menurunkan permintaan ikan', 'L3>DMD': 'Makan Bergizi Gratis dan industri pengolahan menambah permintaan', 'DMD>ED': 'Kelebihan permintaan adalah permintaan dikurangi pasokan',
+  const MEK = { 'L1>M': 'Logistik dan rantai dingin (cold chain) menurunkan margin distribusi', 'M>C': 'Margin adalah bagian dari harga konsumen', 'P>C': 'Harga produsen diteruskan ke harga konsumen',
+    'C>DMD': 'Harga konsumen yang lebih tinggi menurunkan permintaan ikan', 'L3>DMD': 'Permintaan tambahan dari MBG, industri pengolahan, horeka, serta perdagangan antarpulau dan ekspor', 'DMD>ED': 'Kelebihan permintaan adalah permintaan dikurangi pasokan',
     'SUP>ED': 'Kelebihan permintaan adalah permintaan dikurangi pasokan', 'ED>P': 'Harga produsen naik ketika permintaan melebihi pasokan', 'L2>SUP': 'Pelepasan stok menambah pasokan',
     'K>SUP': 'Kapasitas tangkap menentukan pasokan yang didaratkan', 'E1>SUP': 'Kondisi perairan memengaruhi ketersediaan tangkapan', 'P>IT': 'Harga yang diterima nelayan mengikuti harga produsen ikan',
     'CPI>IB': 'Harga yang dibayar nelayan mengikuti harga konsumen', 'IT>NTN': 'Nilai tukar adalah harga diterima dibagi harga dibayar', 'IB>NTN': 'Nilai tukar adalah harga diterima dibagi harga dibayar',
@@ -2823,7 +2844,7 @@ footer a { color: var(--laut); }
     const mtm = {};
     D.mtm.periods.forEach((p, i) => { if (Number.isFinite(D.mtm.values[i])) mtm[p] = D.mtm.values[i]; });
     const naif = p => mtm[E.addMonths(p, -1)];
-    /* kinerja tiap model pada uji waktu nyata */
+    /* kinerja tiap model pada uji <i>out-of-sample</i> */
     const models = Object.keys(nc.models).map(k => {
       const m = nc.models[k];
       if (!m.ok) return { k, ok: false, n: m.n, perlu: m.perlu || 24 };
@@ -2932,7 +2953,7 @@ footer a { color: var(--laut); }
     const k = [], ME = o.ME;
     if (ME) {
       const terbaik = o.models.filter(m => m.ok && m.k !== 'E').sort((a, b) => a.mae - b.mae)[0];
-      k.push(`Pada ${ME.n} bulan uji waktu nyata (${mon(ME.awal)} sampai ${mon(ME.akhir)}), nowcast gabungan meleset rata-rata ${fmt(ME.mae, 3)} poin persen dari inflasi bulanan resmi.`);
+      k.push(`Pada ${ME.n} bulan uji <i>out-of-sample</i> (${mon(ME.awal)} sampai ${mon(ME.akhir)}), nowcast gabungan meleset rata-rata ${fmt(ME.mae, 3)} poin persen dari inflasi bulanan resmi.`);
       if (terbaik) k.push(`Model tunggal paling akurat adalah ${NAMA_MODEL[terbaik.k]} dengan ${ab('MAE')} ${fmt(terbaik.mae, 3)} poin persen; bobot gabungan terbesar saat ini ada pada ${NAMA_MODEL[Object.entries(o.nc.models.E.weights).sort((a, b) => b[1] - a[1])[0][0]]}.`);
       const bl = o.bergulir, akhir = bl[bl.length - 1];
       if (akhir) k.push(`Dalam 12 bulan terakhir sampai ${mon(akhir.p)}, ${ab('MAE')} gabungan ${fmt(akhir.e, 3)} poin persen, pola musiman ${fmt(akhir.s, 3)} poin persen.`);
@@ -2940,7 +2961,7 @@ footer a { color: var(--laut); }
     if (o.gMin && o.base) k.push(`Pengaturan dengan ${ab('MAE')} terkecil adalah faktor lupa ${fmt(o.gMin.l, 2)} dan ambang Huber ${namaHub(o.gMin.h)} (${fmt(o.gMin.mae, 3)} poin persen), dibanding ${fmt(o.base.mae, 3)} poin persen pada pengaturan yang dipakai; perkiraan inflasi tahunan bulan berikutnya pada semua kombinasi berkisar ${fmt(Math.min(...[].concat(...o.grid).map(g => g.next)))} sampai ${fmt(Math.max(...[].concat(...o.grid).map(g => g.next)))} persen.`);
     const uji = o.byH.filter(b => b.n >= 8), lebihBaik = uji.filter(b => b.mae <= b.maeNaif).map(b => b.h), kalah = uji.filter(b => b.mae > b.maeNaif).map(b => b.h);
     if (uji.length) {
-      let t = `Pada uji mundur, proyeksi dasar ${lebihBaik.length ? 'lebih akurat daripada pembanding naif pada horizon ' + lebihBaik.join(', ') + ' bulan' : 'tidak lebih akurat daripada pembanding naif pada horizon mana pun'}${kalah.length ? ' dan kalah pada horizon ' + kalah.join(', ') + ' bulan' : ''}.`;
+      let t = `Pada <i>backtest</i>, proyeksi dasar ${lebihBaik.length ? 'lebih akurat daripada pembanding naif pada horizon ' + lebihBaik.join(', ') + ' bulan' : 'tidak lebih akurat daripada pembanding naif pada horizon mana pun'}${kalah.length ? ' dan kalah pada horizon ' + kalah.join(', ') + ' bulan' : ''}.`;
       if (uji.every(b => b.bias > 0)) t += ` Kesalahan rata-rata positif pada semua horizon (${fmt(Math.min(...uji.map(b => b.bias)), 2)} sampai ${fmt(Math.max(...uji.map(b => b.bias)), 2)} poin persen), artinya proyeksi dasar cenderung lebih rendah daripada angka resmi.`;
       else if (uji.every(b => b.bias < 0)) t += ` Kesalahan rata-rata negatif pada semua horizon, artinya proyeksi dasar cenderung lebih tinggi daripada angka resmi.`;
       k.push(t);
@@ -2950,7 +2971,7 @@ footer a { color: var(--laut); }
   function renderRobust() {
     const box = $('sheet-robust'), Mm = U.M, last = Mm.periods[Mm.periods.length - 1], nEntri = Object.keys(S.entries).length;
     box.innerHTML = `<h2>Uji ketahanan model</h2>
-      <p class="catatan">Semua uji di halaman ini dihitung ulang dari data yang sedang dipakai: IHK sampai <b>${esc(mon(last))}</b>${nEntri ? `, termasuk ${nEntri} periode isian pengguna` : ''}, bulan sasaran <b>${esc(mon(S.T))}</b>. Setiap kali data resmi bulan baru disimpan pada menu Input data, angka, grafik, dan status di halaman ini ikut diperbarui. Uji memakai cara uji waktu nyata: model hanya memakai data sampai bulan sebelum bulan yang ditebak (Tashman, 2000).</p>
+      <p class="catatan">Semua uji di halaman ini dihitung ulang dari data yang sedang dipakai: IHK sampai <b>${esc(mon(last))}</b>${nEntri ? `, termasuk ${nEntri} periode isian pengguna` : ''}, bulan sasaran <b>${esc(mon(S.T))}</b>. Setiap kali data resmi bulan baru disimpan pada menu Input data, angka, grafik, dan status di halaman ini ikut diperbarui. Pengujian memakai cara <i>out-of-sample</i>: model hanya memakai data sampai bulan sebelum bulan yang ditebak (Tashman, 2000).</p>
       <div id="rb-isi"><p class="catatan">Sedang menghitung uji ketahanan...</p></div>`;
     setTimeout(() => {
       let o;
@@ -2972,7 +2993,7 @@ footer a { color: var(--laut); }
       <p class="keterangan">Status disusun otomatis dari angka pada halaman ini. Memadai: lolos kriteria yang dijelaskan pada setiap bagian. Perlu dicermati: lolos sebagian atau hasilnya belum bermakna secara statistik. Lemah: tidak lolos. Informasi: tidak ada kriteria lulus.</p>
       <h3>Bacaan otomatis</h3><ul class="bacaan">${bacaanOtomatis(o)}</ul>
 
-      <h3>1. Nowcast inflasi bulanan: akurasi pada uji waktu nyata</h3>
+      <h3>1. Nowcast inflasi bulanan: akurasi pada uji <i>out-of-sample</i></h3>
       <div class="tabel-wadah"><table><thead><tr><th>Model</th><th class="n">Bulan uji</th><th class="n">${ab('MAE')}</th><th class="n">${ab('RMSE')}</th><th class="n">${ab('MAE')} pola musiman</th><th class="n">${ab('MAE')} naif</th><th class="n">Rasio terhadap pola musiman</th><th class="n">Statistik ${ab('DM')}</th><th class="n">${ab('PVAL')}</th><th class="n">Cakupan rentang 90 persen (persen)</th><th class="n">Bulan yang bobotnya diturunkan (persen)</th></tr></thead><tbody>${baris}</tbody></table></div>
       ${ket(['MAE', 'RMSE', 'DM', 'PVAL'])}
       <p class="keterangan">Satuan ${ab('MAE')} dan ${ab('RMSE')}: poin persen inflasi bulanan. Pola musiman: rata-rata inflasi bulanan pada bulan kalender yang sama di tahun-tahun sebelumnya. Naif: inflasi bulan lalu dipakai sebagai tebakan bulan ini. Rasio di bawah 1 berarti model lebih akurat daripada pola musiman. Uji ${ab('DM')} membandingkan kuadrat kesalahan model dengan pola musiman (Diebold dan Mariano, 1995) dengan koreksi sampel kecil (Harvey dkk., 1997). Bulan yang bobotnya diturunkan adalah bulan dengan kesalahan besar yang pengaruhnya dibatasi oleh pembobotan Huber.</p>
@@ -2985,7 +3006,7 @@ footer a { color: var(--laut); }
       <div class="tabel-wadah"><table><thead><tr><th>Bagian data untuk estimasi awal</th><th class="n">Bulan uji</th><th class="n">${ab('MAE')} gabungan</th><th class="n">${ab('MAE')} pola musiman</th><th class="n">Rasio</th><th class="n">Nowcast inflasi tahunan bulan berikutnya (persen)</th></tr></thead><tbody>${o.n0.map(r => `<tr${r.f === N00 ? ' class="tebal"' : ''}><td>${fmt(100 * r.f, 0)} persen pertama</td><td class="n">${r.n}</td><td class="n">${fmt(r.mae, 3)}</td><td class="n">${fmt(r.maeSeas, 3)}</td><td class="n">${fmt(r.mae / r.maeSeas, 2)}</td><td class="n">${fmt(r.next)}</td></tr>`).join('')}</tbody></table></div>
       <p class="keterangan">Jumlah bulan uji berbeda antarbaris, sehingga yang dibandingkan adalah rasio terhadap pola musiman pada bulan uji yang sama.</p>
 
-      <h3>3. Proyeksi dasar: uji mundur per horizon</h3>
+      <h3>3. Proyeksi dasar: <i>backtest</i> (pengujian pada data masa lalu) per horizon</h3>
       <p class="catatan">Data dipotong pada setiap bulan asal, proyeksi dasar dibuat ulang hanya dari data sampai bulan itu, lalu dibandingkan dengan inflasi tahunan resmi 1 sampai 12 bulan kemudian. Pembanding naif memakai inflasi tahunan terakhir yang sudah diketahui. Horizon bulan sasaran (${esc(mon(S.T))}) adalah ${hS} bulan.</p>
       <div class="grafik" id="g-rb-h"></div>
       <div class="tabel-wadah"><table><thead><tr><th class="n">Horizon (bulan)</th><th class="n">Titik uji</th><th class="n">${ab('MAE')}</th><th class="n">${ab('RMSE')}</th><th class="n">Kesalahan rata-rata</th><th class="n">${ab('MAE')} naif</th><th class="n">Statistik ${ab('DM')}</th><th class="n">${ab('PVAL')}</th><th class="n">Rentang kesalahan 90 persen</th></tr></thead><tbody>${bh.map(b => `<tr${b.h === hS ? ' class="terpilih"' : ''}><td class="n">${b.h}</td><td class="n">${b.n}</td><td class="n">${fmt(b.mae, 2)}</td><td class="n">${fmt(b.rmse, 2)}</td><td class="n">${fmt(b.bias, 2)}</td><td class="n">${fmt(b.maeNaif, 2)}</td>${b.dm.kurang ? '<td class="n" colspan="2">titik uji kurang</td>' : `<td class="n">${fmt(b.dm.stat, 2)}</td><td class="n">${fmt(b.dm.p, 3)}</td>`}<td class="n">${fmt(b.q05, 2)} sampai ${fmt(b.q95, 2)}</td></tr>`).join('')}</tbody></table></div>
@@ -2996,11 +3017,11 @@ footer a { color: var(--laut); }
       <div class="tabel-wadah"><table><thead><tr><th>Koefisien</th><th class="n">Awal uji</th><th class="n">Terakhir</th><th class="n">Seluruh sampel</th><th class="n">Galat baku</th><th class="n">Rentang 24 bulan terakhir</th><th>Terakhir dalam dua galat baku</th></tr></thead><tbody>${o.koef.map(k => `<tr><td>${esc(k.lab)}</td><td class="n">${fmt(k.awal, 3)}</td><td class="n">${fmt(k.akhir, 3)}</td><td class="n">${fmt(k.full, 3)}</td><td class="n">${fmt(k.se, 3)}</td><td class="n">${fmt(k.rentang24, 3)}</td><td>${k.stabil ? 'Ya' : 'Tidak'}</td></tr>`).join('')}</tbody></table></div>
       <p class="keterangan">Koefisien tanpa satuan: poin persen inflasi bulanan per poin persen penjelas. Koefisien harga PIHPS dibaca sebagai tambahan inflasi bulanan untuk setiap 1 poin persen andil perubahan harga pangan PIHPS.</p>` : '<p class="catatan">Model A belum aktif.</p>'}
 
-      <h3>5. Kepekaan parameter sistem dinamis (penapisan Morris)</h3>
+      <h3>5. Kepekaan parameter sistem dinamis (<i>Morris screening</i>, penyaringan parameter yang paling berpengaruh)</h3>
       ${mo ? `<p class="catatan">Sembilan parameter yang nilainya tidak pasti digeser satu per satu di dalam rentangnya, sepanjang ${mo.r} lintasan acak (${mo.evals} kali simulasi) menurut metode Morris (1991) dengan ukuran ${ab('MUSTAR')} dari Campolongo dkk. (2007). Dihitung pada ${esc(mon(o.Tm))} dengan setelan instrumen ${o.dariRencana ? 'dari rencana terpilih di menu Simulasi sasaran' : 'dari menu Pasar ikan'}: ${E.LEVERS.map((l, i) => `${l.label.charAt(0).toLowerCase() + l.label.slice(1)} ${fmtTuas(l, o.zPlan[i] || 0)}`).join('; ')}.</p>
       <div class="dua"><div><h4>Pengaruh terhadap inflasi tahunan (poin persen)</h4><div class="grafik" id="g-rb-m1"></div></div><div><h4>Pengaruh terhadap perubahan penduduk miskin (orang)</h4><div class="grafik" id="g-rb-m2"></div></div></div>
       <div class="tabel-wadah"><table><thead><tr><th>Parameter</th><th class="n">Rentang yang diuji</th><th class="n">${ab('MUSTAR')} inflasi (poin persen)</th><th class="n">${ab('SIGEE')} inflasi</th><th class="n">${ab('MUSTAR')} penduduk miskin (orang)</th><th class="n">${ab('SIGEE')} penduduk miskin</th></tr></thead><tbody>${mo.factors.slice().sort((a, b) => b.out[0].muStar - a.out[0].muStar).map(f => `<tr><td>${esc(f.lab)}</td><td class="n">${fmt(f.lo, 2)} sampai ${fmt(f.hi, 2)}</td><td class="n">${fmt(f.out[0].muStar, 3)}</td><td class="n">${fmt(f.out[0].sigma, 3)}</td><td class="n">${fmt0(f.out[1].muStar)}</td><td class="n">${fmt0(f.out[1].sigma)}</td></tr>`).join('')}</tbody></table></div>
-      ${ket(['MUSTAR', 'SIGEE'])}` : '<p class="catatan">Penapisan Morris belum dapat dihitung untuk bulan sasaran ini.</p>'}
+      ${ket(['MUSTAR', 'SIGEE'])}` : '<p class="catatan"><i>Morris screening</i> belum dapat dihitung untuk bulan sasaran ini.</p>'}
 
       <h3>6. Kalibrasi sebaran pengeluaran kabupaten/kota</h3>
       <p class="catatan">${ab('P2')} resmi tidak dipakai saat kalibrasi, sehingga dapat dipakai sebagai uji: model log-normal dikalibrasi dengan ${ab('P0')} dan ${ab('P1')}, lalu dipakai untuk menebak ${ab('P2')}. Pembandingnya adalah model yang sebarannya diturunkan dari rasio gini (López dan Servén, 2006).</p>
@@ -3225,7 +3246,7 @@ footer a { color: var(--laut); }
     if (r.gantiT) kal.push(`Bulan sasaran bergeser ke ${mon(r.gantiT)} karena bulan sasaran sebelumnya sudah terlewati.`);
     if (r.nowcast != null && r.actual != null) kal.push(`Nowcast yang sudah dibuat untuk ${mon(r.period)} adalah ${fmt(r.nowcast)} persen (inflasi bulanan); angka resmi ${fmt(r.actual)} persen, selisih ${fmt(r.error, 3)} poin persen, ${r.inside ? 'masih di dalam' : 'di luar'} rentang 90 persen.`);
     else if (r.actual != null) kal.push(`Inflasi bulanan ${mon(r.period)} tercatat ${fmt(r.actual)} persen.`);
-    if (r.maeBefore != null && r.maeAfter != null) kal.push(`Rata-rata kesalahan absolut model gabungan pada uji waktu nyata berubah dari ${fmt(r.maeBefore, 3)} menjadi ${fmt(r.maeAfter, 3)} poin persen.`);
+    if (r.maeBefore != null && r.maeAfter != null) kal.push(`Rata-rata kesalahan absolut model gabungan pada uji out-of-sample berubah dari ${fmt(r.maeBefore, 3)} menjadi ${fmt(r.maeAfter, 3)} poin persen.`);
     if (r.wAfter) kal.push('Bobot gabungan terbaru: ' + Object.entries(r.wAfter).map(([k, v]) => `model ${k} ${fmt(v, 2)}` + (r.wBefore && r.wBefore[k] != null ? ` (sebelumnya ${fmt(r.wBefore[k], 2)})` : '')).join(', ') + '.');
     if (r.tanpaPIHPS) kal.push('Harga PIHPS bulan ini belum diisi, sehingga yang belajar dari data ini baru model M; model A, B, C, dan S ikut belajar setelah harga PIHPS bulan tersebut diisi.');
     if (r.nIkan) kal.push(`Harga ${r.nIkan} jenis ikan ikut disimpan dan dipakai pada nowcast serta indeks harga produsen ikan.`);
@@ -3243,8 +3264,8 @@ footer a { color: var(--laut); }
     const last = Mm.periods[Mm.periods.length - 1];
     box.innerHTML = `
       <h2>Model, parameter, dan metode</h2>
-      <p class="narasi">Aplikasi ini memadukan lima bagian. Pertama, proyeksi dasar inflasi per subkelompok IHK dengan pola musiman. Kedua, nowcast inflasi bulanan dari harga PIHPS, harga ikan, dan indikator lain, yang koefisiennya diperbarui setiap bulan dengan kuadrat terkecil rekursif berbobot Huber lalu digabung dengan bobot menurut kesalahan terbaru. Ketiga, model sistem dinamis pasar ikan yang menghubungkan harga, pasokan, kapasitas tangkap, dan nilai tukar nelayan. Keempat, model sebaran pengeluaran log-normal per kabupaten/kota untuk menerjemahkan perubahan garis kemiskinan menjadi perubahan jumlah penduduk miskin. Kelima, pencarian kombinasi kebijakan dengan algoritme ${ab('NSGA')} yang dibantu model pengganti ${ab('RBF')} (kerangka ${ab('SADDSO')}). Parameter diestimasi ulang setiap kali data bertambah; data yang sedang dipakai sampai ${esc(mon(last))}.</p>
-      <p class="narasi">Modul ini adalah kelanjutan <a href="../aplikasi/index.html">Modul 1 SIMPUL Pasar</a>. Modul 1 menemukan bahwa friksi harga pangan terbagi menjadi friksi struktural dan kegagalan koordinasi, bahwa sebaran harga produsen ikan 3,01 kali lebih lebar daripada sebaran harga eceran, dan bahwa permintaan terjamin Program Makan Bergizi Gratis dapat dipenuhi dari dalam provinsi. Temuan itu masuk ke modul ini sebagai instrumen kebijakan pada menu Pasar ikan (penurunan margin distribusi dan tambahan penyerapan permintaan) dan sebagai isian harga ikan per jenis pada menu Input data, sehingga dampaknya terhadap inflasi dan penduduk miskin dapat diukur.</p>
+      <p class="narasi">Aplikasi ini memadukan lima bagian. Pertama, proyeksi dasar inflasi per subkelompok IHK dengan pola musiman. Kedua, nowcast inflasi bulanan dari harga PIHPS, harga ikan, dan indikator lain, yang koefisiennya diperbarui setiap bulan dengan kuadrat terkecil rekursif berbobot Huber lalu digabung dengan bobot menurut kesalahan terbaru. Ketiga, model sistem dinamis pasar ikan yang menghubungkan harga, pasokan, kapasitas tangkap, dan nilai tukar nelayan. Keempat, model sebaran pengeluaran log-normal per kabupaten/kota untuk menerjemahkan perubahan garis kemiskinan menjadi perubahan jumlah penduduk miskin. Kelima, optimasi multi objektif (<i>multi-objective optimization</i>) untuk mencari kombinasi kebijakan dengan algoritme ${ab('NSGA')} yang dibantu model pengganti ${ab('RBF')} (kerangka ${ab('SADDSO')}). Parameter diestimasi ulang setiap kali data bertambah; data yang sedang dipakai sampai ${esc(mon(last))}.</p>
+      <p class="narasi">Modul ini adalah kelanjutan <a href="../aplikasi/index.html">Modul 1 SIMPUL Pasar</a>. Modul 1 menemukan bahwa friksi harga pangan terbagi menjadi friksi struktural (biaya angkut yang menetap) dan friksi pencocokan (<i>coordination failure</i>, yaitu pembeli dan penjual yang belum saling terhubung), bahwa sebaran harga produsen ikan 3,01 kali lebih lebar daripada sebaran harga eceran, dan bahwa permintaan yang pasti, seperti Program Makan Bergizi Gratis, dapat dipenuhi dari dalam provinsi. Temuan itu masuk ke modul ini sebagai instrumen kebijakan pada menu Pasar ikan (penurunan margin distribusi dan tambahan penyerapan permintaan dari MBG, industri pengolahan, horeka, serta perdagangan antarpulau dan ekspor) dan sebagai isian harga ikan per jenis pada menu Input data, sehingga dampaknya terhadap inflasi dan penduduk miskin dapat diukur.</p>
       <h3>Parameter hasil estimasi</h3>
       <div class="tabel-wadah"><table><thead><tr><th>Parameter</th><th class="n">Estimasi</th><th class="n">Galat baku</th><th class="n">Jumlah bulan</th><th>Satuan</th></tr></thead><tbody>
         <tr><td>Elastisitas harga yang diterima nelayan tangkap (${ab('IT')}) terhadap indeks harga produsen ikan</td><td class="n">${fmt(fp.theta.est, 3)}</td><td class="n">${fmt(fp.theta.se, 3)}</td><td class="n">${fp.theta.n}</td><td>persen per persen</td></tr>
@@ -3310,11 +3331,43 @@ footer a { color: var(--laut); }
     }, 300));
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { U.pita(); if (S.tab !== 'data') renderActive(); });
   }
+  /* istilah asing ditulis miring di seluruh halaman, termasuk teks yang dibuat ulang saat data berubah */
+  const ASING = /\b(nowcast(?:ing)?|backtest|out-of-sample|surrogate|cold chain|pass-through|robustness|Morris screening|coordination failure|volatile food|administered prices|core|output|multi-objective optimization|sensitivity grid)\b/gi;
+  function miringkan(root) {
+    if (!root || !root.nodeType) return;
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(n) {
+      const p = n.parentElement;
+      if (!p || p.closest('i,em,svg,script,style,option,select,textarea,title,code,pre')) return NodeFilter.FILTER_REJECT;
+      ASING.lastIndex = 0;
+      return ASING.test(n.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    } });
+    const daftar = [];
+    while (w.nextNode()) daftar.push(w.currentNode);
+    daftar.forEach(n => {
+      const t = n.nodeValue, frag = document.createDocumentFragment();
+      let akhir = 0, m;
+      ASING.lastIndex = 0;
+      while ((m = ASING.exec(t))) {
+        if (m.index > akhir) frag.appendChild(document.createTextNode(t.slice(akhir, m.index)));
+        const i = document.createElement('i'); i.textContent = m[0]; frag.appendChild(i);
+        akhir = m.index + m[0].length;
+      }
+      if (akhir < t.length) frag.appendChild(document.createTextNode(t.slice(akhir)));
+      n.parentNode.replaceChild(frag, n);
+    });
+  }
+  const pengamat = new MutationObserver(catatan => {
+    pengamat.disconnect();
+    catatan.forEach(c => c.addedNodes.forEach(n => miringkan(n.nodeType === 1 ? n : n.parentElement)));
+    pengamat.observe(document.body, { childList: true, subtree: true });
+  });
   U.rebuild = rebuild;
   U.renderActive = renderActive;
   rebuild();
   wire();
   U.initCaps(async () => { await A.muatEntri(); rebuild(); });
+  miringkan(document.body);
+  pengamat.observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 
