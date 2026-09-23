@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SIMPUL Sulawesi Tenggara: dari friksi pasar pangan ke inflasi dan kemiskinan</title>
+<meta name="description" content="Dua modul SIMPUL: diagnosis friksi pasar pangan dan pencocokan permintaan Program Makan Bergizi Gratis, serta pemantauan inflasi dan simulasi dampak kebijakan terhadap penduduk miskin Sulawesi Tenggara.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=Spectral:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --kertas: #EDF1EF; --panel: #F6F8F7; --tinta: #0E242B; --tinta2: #3D5A61; --tinta3: #6B8188;
+  --laut: #14555F; --dangkal: #79ADAB; --karang: #AE4429; --pasir: #B08A21; --garis: #C3D0CC;
+  --sans: "IBM Plex Sans Condensed", -apple-system, "Segoe UI", Arial, sans-serif;
+  --serif: "Spectral", Georgia, "Times New Roman", serif;
+  box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body { margin: 0; background: var(--kertas); color: var(--tinta); font-family: var(--serif); font-size: 17px; line-height: 1.6;
+  background-image: repeating-linear-gradient(0deg, transparent 0 47px, rgba(20,85,95,.045) 47px 48px), repeating-linear-gradient(90deg, transparent 0 47px, rgba(20,85,95,.032) 47px 48px); }
+.bungkus { max-width: 1120px; margin: 0 auto; padding: 0 clamp(18px, 4vw, 44px) 48px; }
+a { color: var(--laut); }
+header { padding: clamp(28px, 6vw, 64px) 0 26px; border-bottom: 1px solid var(--garis); }
+.merek { font-family: var(--sans); font-weight: 600; color: var(--tinta2); font-size: 15px; margin: 0 0 14px; }
+h1 { font-family: var(--sans); font-weight: 700; font-size: clamp(34px, 6.4vw, 66px); line-height: 1.02; letter-spacing: -.01em; margin: 0 0 18px; max-width: 16ch; }
+.tesis { font-size: clamp(17px, 2vw, 20px); color: var(--tinta2); max-width: 62ch; margin: 0; }
+.alur { display: grid; grid-template-columns: minmax(0, 1fr) 90px minmax(0, 1fr); align-items: stretch; margin: 34px 0 10px; }
+.modul { background: var(--panel); border: 1px solid var(--garis); border-top: 4px solid var(--laut); border-radius: 3px; padding: 22px 24px 24px; display: flex; flex-direction: column; }
+.modul.dua { border-top-color: var(--karang); }
+.modul .nomor { font-family: var(--sans); font-size: 14px; color: var(--tinta3); margin: 0; }
+.modul h2 { font-family: var(--sans); font-size: 28px; line-height: 1.1; margin: 2px 0 8px; }
+.modul .tanya { font-style: italic; color: var(--tinta2); margin: 0 0 14px; }
+.angka { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 18px; margin: 4px 0 18px; padding: 12px 0; border-top: 1px solid var(--garis); border-bottom: 1px solid var(--garis); }
+.angka div { font-family: var(--sans); font-size: 14px; line-height: 1.3; color: var(--tinta2); }
+.angka b { display: block; font-size: 24px; color: var(--tinta); font-weight: 600; font-variant-numeric: tabular-nums; }
+.modul ul { margin: 0 0 18px; padding-left: 18px; font-size: 16px; }
+.modul li { margin: 3px 0; }
+.buka { margin-top: auto; align-self: flex-start; font-family: var(--sans); font-weight: 600; font-size: 16px; text-decoration: none; color: var(--kertas); background: var(--laut); padding: 10px 18px; border-radius: 3px; }
+.modul.dua .buka { background: var(--karang); }
+.buka:hover, .buka:focus-visible { background: var(--tinta); outline: none; }
+.panah { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--tinta3); font-family: var(--sans); font-size: 13px; text-align: center; line-height: 1.25; }
+.panah svg { width: 70px; height: 24px; }
+h3 { font-family: var(--sans); font-size: 22px; margin: 40px 0 6px; }
+.catatan { color: var(--tinta2); max-width: 70ch; margin: 0 0 14px; }
+.tabel { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 16px; min-width: 620px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--garis); }
+th { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--tinta2); }
+td:first-child { width: 42%; }
+.koreksi { margin-top: 34px; border-left: 3px solid var(--pasir); padding: 4px 0 4px 16px; max-width: 76ch; }
+.koreksi h3 { margin-top: 0; font-size: 18px; }
+.koreksi p { margin: 0; font-size: 16px; color: var(--tinta2); }
+footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--garis); font-family: var(--sans); font-size: 14px; color: var(--tinta3); display: flex; flex-wrap: wrap; gap: 6px 26px; }
+@media (max-width: 820px) {
+  .alur { grid-template-columns: 1fr; }
+  .panah { flex-direction: row; padding: 12px 0; }
+  .panah svg { transform: rotate(90deg); width: 40px; }
+}
+</style>
+</head>
+<body>
+<div class="bungkus">
+<header>
+  <p class="merek">Forkestra 2026, Kompetisi Opini Ilmiah, Bank Indonesia Provinsi Sulawesi Tenggara</p>
+  <h1>SIMPUL Sulawesi Tenggara</h1>
+  <p class="tesis">Sistem Intelijen Mitra Pangan Unggul Lokal. Modul pertama menemukan di mana pasar pangan tidak tersambung dan bagaimana permintaan terjamin Program Makan Bergizi Gratis dapat dicocokkan dengan produksi tujuh belas kabupaten dan kota. Modul kedua mengukur apa arti perbaikan itu bagi inflasi dan penduduk miskin, dan diperbarui setiap kali data resmi bulan baru terbit.</p>
+</header>
+
+<section class="alur" aria-label="Dua modul SIMPUL">
+  <article class="modul">
+    <p class="nomor">Modul 1</p>
+    <h2>SIMPUL Pasar</h2>
+    <p class="tanya">Dari mana friksi harga pangan berasal, dan bagaimana permintaan program dipenuhi dari dalam provinsi?</p>
+    <div class="angka">
+      <div><b>2,69 kali</b>rasio harga produsen tertinggi terhadap terendah, jenis ikan sama</div>
+      <div><b>3,01 kali</b>sebaran harga produsen dibanding sebaran harga eceran</div>
+      <div><b>1,91 persen</b>kebutuhan ikan program terhadap produksi tangkap 2024</div>
+      <div><b>1.547 ton</b>ikan yang harus dijadwalkan melintasi batas kabupaten per tahun</div>
+    </div>
+    <ul>
+      <li>Friksi struktural dan kegagalan koordinasi dengan model komponen tak teramati</li>
+      <li>Sebaran harga produsen antarkabupaten dan uji tandingannya</li>
+      <li>Alokasi pengadaan dan peta arus tiga dimensi</li>
+    </ul>
+    <a class="buka" href="aplikasi/index.html">Buka Modul 1</a>
+  </article>
+
+  <div class="panah" aria-hidden="true">
+    <svg viewBox="0 0 70 24"><line x1="2" y1="12" x2="60" y2="12" stroke="currentColor" stroke-width="2"/><path d="M58 5 L68 12 L58 19" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <span>temuan menjadi instrumen</span>
+  </div>
+
+  <article class="modul dua">
+    <p class="nomor">Modul 2</p>
+    <h2>SIMPUL Inflasi</h2>
+    <p class="tanya">Berapa dampaknya terhadap inflasi dan penduduk miskin, dan kombinasi kebijakan apa yang membawa inflasi ke rentang sasaran?</p>
+    <div class="angka">
+      <div><b>2,5 &plusmn; 1 persen</b>rentang sasaran inflasi 2025 sampai 2027 (PMK Nomor 31 Tahun 2024)</div>
+      <div><b>17 wilayah</b>dampak penduduk miskin per kabupaten dan kota</div>
+      <div><b>18 jenis</b>ikan dan hasil laut dengan isian harga konsumen dan produsen</div>
+      <div><b>Bulanan</b>nowcast, sasaran, dan uji ketahanan diperbarui dari isian data resmi</div>
+    </div>
+    <ul>
+      <li>Nowcast inflasi bulanan dengan gabungan model adaptif</li>
+      <li>Sasaran inflasi diterjemahkan menjadi arahan harga per komoditas</li>
+      <li>Pasar ikan sebagai sistem dinamis dan pencarian kebijakan multitujuan</li>
+    </ul>
+    <a class="buka" href="inflasi/index.html">Buka Modul 2</a>
+  </article>
+</section>
+
+<h3>Dari temuan ke instrumen</h3>
+<p class="catatan">Setiap temuan Modul 1 masuk ke Modul 2 sebagai instrumen atau isian yang dapat diubah, sehingga dampaknya terhadap inflasi dan penduduk miskin dapat diukur.</p>
+<div class="tabel"><table>
+  <thead><tr><th>Temuan atau rekomendasi Modul 1</th><th>Dipakai di Modul 2</th></tr></thead>
+  <tbody>
+    <tr><td>Friksi struktural setara 5,29 persen harga eceran, bersumber dari biaya angkut</td><td>Menu Pasar ikan: instrumen penurunan margin distribusi melalui logistik dan rantai dingin</td></tr>
+    <tr><td>Permintaan terjamin Program Makan Bergizi Gratis dapat dipenuhi dari dalam provinsi</td><td>Menu Pasar ikan: instrumen tambahan penyerapan permintaan</td></tr>
+    <tr><td>Fungsi kedua sarana pencocokan: keterbukaan harga produsen antarkabupaten</td><td>Menu Input data: harga 18 jenis ikan per kota IHK dan di tingkat nelayan</td></tr>
+    <tr><td>Nilai Rp136,3 miliar per tahun dapat tertahan pada produsen</td><td>Dampak pada nilai tukar nelayan dan penduduk miskin per kabupaten dan kota</td></tr>
+    <tr><td>Ketahanan kesimpulan diuji melalui kisi kepekaan</td><td>Menu Uji ketahanan: akurasi nowcast, uji mundur, penapisan Morris, dan kalibrasi kemiskinan</td></tr>
+  </tbody>
+</table></div>
+
+<section class="koreksi" aria-label="Catatan koreksi">
+  <h3>Catatan koreksi 23 September 2026</h3>
+  <p>Pada pengolahan untuk naskah awal, produksi Kota Baubau sebesar 18.705,5 ton terlewat karena penulisan nama wilayah pada data KKP berbeda. Setelah dikoreksi, kebutuhan ikan program menjadi 1,91 persen produksi (naskah awal 2,05 persen), perpindahan antarkabupaten 1.547 ton (naskah awal 1.595 ton), dan indeks ketidaksesuaian ruang 0,3125 (naskah awal 0,3503). Pola surplus di wilayah kepulauan justru menjadi nyata secara statistik (uji Mann-Whitney, nilai p 0,018). Nilai yang sampai ke produsen tetap Rp136,3 miliar dan kesimpulan naskah tidak berubah.</p>
+</section>
+
+<footer>
+  <span>Amrin Barata, BPS Provinsi Sulawesi Tenggara</span>
+  <a href="https://github.com/barata90/simpul-sultra">Notebook dan data di GitHub</a>
+  <span>Sumber data: BPS, Bank Indonesia (PIHPS), Kementerian Kelautan dan Perikanan, Badan Gizi Nasional, OCHA/HDX</span>
+</footer>
+</div>
+</body>
+</html>
