@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SIMPUL — Simulasi Friksi Pasar dan Pencocokan Permintaan Pangan Sulawesi Tenggara</title>
+<title>SIMPUL Pasar: Simulasi Friksi Pasar dan Pencocokan Permintaan Pangan Sulawesi Tenggara</title>
 <meta name="description" content="Alat simulasi untuk mendiagnosis friksi pasar pangan dan merancang alokasi pengadaan Program Makan Bergizi Gratis di Sulawesi Tenggara.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -369,16 +369,35 @@ footer li{margin-bottom:3px}
   .tampilan3d{filter:saturate(.96)}
   html{scroll-behavior:auto}
 }
+
+/* navigasi antarmodul SIMPUL */
+.modul-simpul{position:relative; z-index:2; display:flex; flex-wrap:wrap; align-items:stretch; gap:0; margin:0 0 18px; border-bottom:1px solid var(--garis); font-family:"IBM Plex Sans Condensed",-apple-system,"Segoe UI",sans-serif; font-size:14px; line-height:1.3}
+.modul-simpul a{display:flex; flex-direction:column; justify-content:center; gap:1px; padding:9px 16px 10px; color:var(--tinta2, #3D5A61); text-decoration:none; border-bottom:3px solid transparent; margin-bottom:-1px}
+.modul-simpul a span{font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--tinta3, #7C9299)}
+.modul-simpul a:hover{color:var(--tinta, #0E242B); background:rgba(20,85,95,.05)}
+.modul-simpul a:focus-visible{outline:2px solid var(--laut, #14555F); outline-offset:-2px}
+.modul-simpul a[aria-current=page]{color:var(--tinta, #0E242B); font-weight:600; border-bottom-color:var(--laut, #14555F)}
+.modul-simpul a.merek{padding-left:0; font-weight:700; color:var(--tinta, #0E242B); letter-spacing:.02em; margin-right:auto}
+@media (max-width:640px){ .modul-simpul a{padding:8px 10px 9px; font-size:13px} .modul-simpul a.merek{flex-basis:100%; padding:6px 0 2px; border-bottom:0} }
+
+.catatan-koreksi{border-left:3px solid var(--pasir); padding:2px 0 2px 12px}
+.catatan-koreksi b{font-family:var(--angka); font-weight:500}
 </style>
 </head>
 <body>
 <div class="bungkus">
 
+<nav class="modul-simpul" aria-label="Modul SIMPUL">
+  <a class="merek" href="../index.html">SIMPUL Sulawesi Tenggara</a>
+  <a href="../aplikasi/index.html" aria-current="page"><span>Modul 1</span>Pasar: friksi dan pencocokan</a>
+  <a href="../inflasi/index.html"><span>Modul 2</span>Inflasi: nowcast, sasaran, kemiskinan</a>
+</nav>
+
 <header>
   <div class="eyebrow">
-    <span>Forkestra 2026</span><span>Subtema Hilirisasi, Stabilitas Pangan, Sektor Maritim</span><span>Simulasi Kebijakan</span>
+    <span>Forkestra 2026</span><span>Modul 1 SIMPUL</span><span>Subtema Hilirisasi, Stabilitas Pangan, Sektor Maritim</span>
   </div>
-  <h1>Simpul<br><em>Friksi Pasar Pangan Sulawesi&nbsp;Tenggara</em></h1>
+  <h1>Simpul Pasar<br><em>Friksi Pasar Pangan Sulawesi&nbsp;Tenggara</em></h1>
   <p class="tesis">
     Persoalan pangan di provinsi ini bukan kekurangan produksi maupun kekurangan modal,
     melainkan ketiadaan mekanisme pencocokan antara produksi yang tersebar di tujuh belas
@@ -401,7 +420,7 @@ footer li{margin-bottom:3px}
   <aside class="panel" aria-label="Parameter simulasi">
     <h2>Parameter</h2>
     <p class="ket">Seluruh angka pada halaman ini dihitung ulang setiap kali parameter digeser.
-      Nilai awal adalah nilai yang dipakai dalam naskah.</p>
+      Nilai awal adalah nilai naskah versi koreksi 23 September 2026.</p>
 
     <div class="kendali">
       <div class="baris"><label for="pPenerima">Penerima manfaat</label><output id="oPenerima"></output></div>
@@ -429,13 +448,13 @@ footer li{margin-bottom:3px}
 
     <div class="kendali">
       <div class="baris"><label for="pPhi">Batas serapan</label><output id="oPhi"></output></div>
-      <input type="range" id="pPhi" min="2" max="80" step="1" value="25">
+      <input type="range" id="pPhi" min="2" max="80" step="1" value="20">
       <span class="satuan">per mil produksi kabupaten per tahun</span>
     </div>
 
     <div class="kendali">
       <div class="baris"><label for="pHarga">Harga produsen</label><output id="oHarga"></output></div>
-      <input type="range" id="pHarga" min="12000" max="45000" step="250" value="26262">
+      <input type="range" id="pHarga" min="12000" max="45000" step="1" value="26239">
       <span class="satuan">rupiah per kilogram, tertimbang volume</span>
     </div>
 
@@ -650,8 +669,21 @@ footer li{margin-bottom:3px}
       <p>Setiap lembar menyediakan bacaan otomatis yang disusun dari nilai numerik hasil
         perhitungan, bukan dari teks yang disiapkan lebih dahulu. Apabila sebuah pengujian tidak
         menghasilkan bukti yang cukup, bacaan akan menyatakan hal itu secara terbuka.</p>
-      <p style="margin-top:8px">Berkas pengolahan lengkap beserta notebook dan data tersedia pada
-        lampiran naskah.</p>
+      <p style="margin-top:8px">Berkas pengolahan lengkap beserta notebook dan data tersedia di
+        <a href="https://github.com/barata90/simpul-sultra">github.com/barata90/simpul-sultra</a>. Dampak
+        pencocokan terhadap inflasi dan kemiskinan dapat disimulasikan pada
+        <a href="../inflasi/index.html">Modul 2 SIMPUL Inflasi</a>.</p>
+    </div>
+  
+    <div class="catatan-koreksi">
+      <h5>Catatan koreksi 23 September 2026</h5>
+      <p>Pada pengolahan untuk naskah awal, produksi Kota Baubau (18.705,5 ton) terlewat karena
+      penulisan nama wilayah pada data KKP berbeda. Setelah dikoreksi, kebutuhan ikan program menjadi
+      <b>1,91 persen</b> produksi (naskah awal 2,05 persen), seluruh kebutuhan terpenuhi dari dalam
+      provinsi mulai batas serapan <b>1,91 persen</b>, atau baris 2,0 persen pada tabel naskah (naskah awal 2,5 persen), perpindahan
+      antarkabupaten <b>1.547 ton</b> (naskah awal 1.595 ton), dan indeks ketidaksesuaian ruang
+      <b>0,3125</b> (naskah awal 0,3503). Nilai yang sampai ke produsen tetap Rp136,3 miliar dan
+      kesimpulan naskah tidak berubah. Aplikasi ini sejak awal memuat data Baubau yang benar.</p>
     </div>
   </div>
 </footer>
@@ -669,8 +701,8 @@ footer li{margin-bottom:3px}
 const DATA = {"wilayah":[{"n":"Bombana","pop":165590,"ton":29516.0,"val":872135000000,"hrg":29548,"g":"darat"},{"n":"Buton Tengah","pop":124930,"ton":25854.7,"val":512435000000,"hrg":19820,"g":"pulau"},{"n":"Buton Selatan","pop":104400,"ton":24188.6,"val":789605000000,"hrg":32644,"g":"pulau"},{"n":"Wakatobi","pop":121790,"ton":22797.1,"val":539207000000,"hrg":23652,"g":"pulau"},{"n":"Kolaka","pop":254270,"ton":22456.3,"val":757254000000,"hrg":33721,"g":"darat"},{"n":"Kendari","pop":383710,"ton":20297.1,"val":347079000000,"hrg":17100,"g":"darat"},{"n":"Buton","pop":125650,"ton":19333.4,"val":385016000000,"hrg":19914,"g":"pulau"},{"n":"Muna","pop":234540,"ton":18930.0,"val":679817000000,"hrg":35912,"g":"pulau"},{"n":"Baubau","pop":173180,"ton":18705.5,"val":438976000000,"hrg":23468,"g":"pulau"},{"n":"Konawe Utara","pop":76970,"ton":15463.0,"val":391092000000,"hrg":25563,"g":"darat"},{"n":"Muna Barat","pop":94310,"ton":14398.0,"val":422123000000,"hrg":29318,"g":"pulau"},{"n":"Konawe Selatan","pop":340020,"ton":10731.8,"val":254999000000,"hrg":23153,"g":"darat"},{"n":"Konawe Kepulauan","pop":41020,"ton":10036.6,"val":194590000000,"hrg":19388,"g":"pulau"},{"n":"Buton Utara","pop":71410,"ton":8851.1,"val":208616000000,"hrg":23570,"g":"pulau"},{"n":"Kolaka Utara","pop":154180,"ton":7053.1,"val":237626000000,"hrg":33702,"g":"darat"},{"n":"Konawe","pop":283000,"ton":3667.8,"val":117696000000,"hrg":32333,"g":"darat"},{"n":"Kolaka Timur","pop":131040,"ton":176.5,"val":6753000000,"hrg":0,"g":"darat"}],"sebaran":[{"j":"Cakalang","nk":12,"ton":19908.2,"mn":15000,"md":20105,"mx":35000,"sd":0.2603,"d":{"Baubau":[20210,5133.8],"Bombana":[30000,3255.1],"Buton":[16940,1715.2],"Buton Selatan":[25000,1030.5],"Buton Utara":[15000,325.5],"Kendari":[15519,4614.5],"Kolaka":[20000,1054.0],"Kolaka Utara":[35000,714.9],"Konawe":[22737,92.6],"Konawe Kepulauan":[17462,927.9],"Muna Barat":[25000,298.2],"Wakatobi":[20000,745.9]}},{"j":"Tuna Sirip Kuning","nk":12,"ton":12215.3,"mn":15000,"md":26838,"mx":50000,"sd":0.3675,"d":{"Baubau":[21066,1815.2],"Bombana":[30000,984.9],"Buton":[20749,1364.8],"Buton Selatan":[40000,2321.7],"Buton Utara":[50000,497.7],"Kendari":[18518,1454.3],"Kolaka":[25000,113.4],"Kolaka Utara":[35000,528.4],"Konawe Kepulauan":[15000,1741.3],"Konawe Selatan":[28675,169.2],"Muna":[40000,79.1],"Wakatobi":[20000,1145.3]}},{"j":"Kembung Lelaki","nk":9,"ton":9444.5,"mn":20000,"md":28968,"mx":39639,"sd":0.2158,"d":{"Bombana":[25000,2898.5],"Buton Tengah":[39639,854.6],"Kendari":[28968,374.6],"Kolaka":[29980,1658.6],"Kolaka Utara":[30000,165.3],"Konawe Kepulauan":[20000,407.5],"Konawe Selatan":[22000,571.0],"Muna":[35000,1729.0],"Muna Barat":[25740,785.3]}},{"j":"Kembung Gepeng","nk":11,"ton":9212.0,"mn":17263,"md":25000,"mx":40000,"sd":0.267,"d":{"Baubau":[35574,1108.9],"Bombana":[25000,3067.1],"Buton":[24890,728.4],"Buton Selatan":[30000,1275.4],"Buton Utara":[17263,652.9],"Kolaka Utara":[30000,196.8],"Konawe":[21827,109.1],"Konawe Kepulauan":[20000,333.3],"Konawe Selatan":[40000,105.8],"Konawe Utara":[32452,860.7],"Wakatobi":[20000,773.5]}},{"j":"Kuwe","nk":11,"ton":8363.6,"mn":20000,"md":35000,"mx":50000,"sd":0.3021,"d":{"Baubau":[35778,816.3],"Bombana":[35000,951.6],"Buton Selatan":[50000,1641.6],"Buton Tengah":[40000,1271.9],"Buton Utara":[30000,823.2],"Kolaka Utara":[50000,237.9],"Konawe":[25000,224.2],"Konawe Kepulauan":[20000,70.3],"Konawe Selatan":[22785,797.5],"Konawe Utara":[40000,1035.9],"Muna Barat":[30000,493.2]}},{"j":"Tembang Garis Kuning","nk":14,"ton":7639.6,"mn":8820,"md":12040,"mx":25000,"sd":0.2969,"d":{"Baubau":[12080,632.5],"Bombana":[15000,481.9],"Buton":[8820,203.0],"Buton Selatan":[10000,278.1],"Buton Tengah":[10000,1544.7],"Kendari":[12168,369.3],"Kolaka":[10723,278.8],"Kolaka Utara":[25000,136.2],"Konawe":[15000,109.9],"Konawe Kepulauan":[10000,85.3],"Konawe Selatan":[10000,473.1],"Konawe Utara":[12000,2465.7],"Muna":[20000,246.3],"Muna Barat":[15000,335.0]}},{"j":"Lencam","nk":9,"ton":7306.4,"mn":20000,"md":30000,"mx":40000,"sd":0.1945,"d":{"Baubau":[40000,127.1],"Bombana":[30000,884.1],"Buton Selatan":[30000,1929.2],"Buton Tengah":[30000,627.8],"Kendari":[36412,168.0],"Kolaka":[35000,1133.0],"Konawe Kepulauan":[30000,144.4],"Muna":[30000,350.4],"Wakatobi":[20000,1942.5]}},{"j":"Tenggiri","nk":14,"ton":5915.3,"mn":20000,"md":40000,"mx":78000,"sd":0.3569,"d":{"Baubau":[20000,307.1],"Bombana":[30000,1087.4],"Buton":[35000,416.6],"Buton Selatan":[40000,1402.8],"Buton Tengah":[60000,71.8],"Buton Utara":[40000,226.8],"Kolaka":[50000,808.1],"Kolaka Utara":[40000,128.7],"Konawe":[30000,211.2],"Konawe Kepulauan":[45000,160.6],"Konawe Utara":[78000,78.1],"Muna":[70000,244.6],"Muna Barat":[50000,295.6],"Wakatobi":[40000,475.9]}},{"j":"Cumi-Cumi","nk":14,"ton":5230.8,"mn":20000,"md":32794,"mx":50000,"sd":0.258,"d":{"Baubau":[40470,80.9],"Bombana":[30000,78.8],"Buton":[20000,276.6],"Buton Selatan":[35000,337.6],"Buton Tengah":[28336,811.5],"Kendari":[38008,281.6],"Kolaka":[38250,88.4],"Kolaka Utara":[20000,904.8],"Konawe Kepulauan":[35000,156.9],"Konawe Selatan":[35000,233.4],"Konawe Utara":[30588,53.1],"Muna":[50000,483.4],"Muna Barat":[25000,896.6],"Wakatobi":[30000,547.2]}},{"j":"Layang Benggol","nk":9,"ton":4497.4,"mn":8480,"md":18119,"mx":30000,"sd":0.4307,"d":{"Bombana":[25000,122.3],"Buton":[8480,1682.8],"Buton Utara":[18119,596.2],"Kendari":[17117,861.8],"Kolaka":[25000,117.2],"Kolaka Utara":[25000,173.6],"Konawe Kepulauan":[12000,370.8],"Konawe Selatan":[11962,127.0],"Muna":[30000,445.7]}},{"j":"Kerapu Karang","nk":9,"ton":4142.8,"mn":17365,"md":40000,"mx":50000,"sd":0.3517,"d":{"Buton":[42183,282.1],"Buton Selatan":[45000,1863.3],"Buton Utara":[17365,199.0],"Kolaka":[40000,222.6],"Kolaka Utara":[50000,188.6],"Konawe":[40000,145.1],"Konawe Kepulauan":[32223,88.8],"Konawe Selatan":[25000,403.1],"Wakatobi":[50000,750.2]}},{"j":"Baronang Bintik Putih","nk":10,"ton":4099.9,"mn":12000,"md":24994,"mx":44513,"sd":0.3782,"d":{"Baubau":[44513,262.3],"Bombana":[25000,416.0],"Buton":[30000,274.9],"Buton Selatan":[35000,336.5],"Buton Utara":[12000,311.4],"Kendari":[35339,151.5],"Kolaka":[24988,173.1],"Konawe Kepulauan":[20000,124.4],"Konawe Selatan":[20000,711.1],"Wakatobi":[20000,1338.8]}},{"j":"Kakap Merah Pesisir","nk":8,"ton":3479.2,"mn":35000,"md":42500,"mx":50000,"sd":0.1536,"d":{"Baubau":[40000,66.7],"Bombana":[35000,482.4],"Kendari":[50000,112.5],"Kolaka":[50000,593.4],"Konawe":[35000,209.1],"Muna":[45000,585.9],"Muna Barat":[50000,117.0],"Wakatobi":[40000,1312.2]}},{"j":"Selar Kuning","nk":9,"ton":3189.4,"mn":12075,"md":25000,"mx":28734,"sd":0.3348,"d":{"Baubau":[27540,303.0],"Bombana":[25000,348.4],"Buton Tengah":[15000,1079.6],"Buton Utara":[17346,432.0],"Kendari":[28734,204.2],"Kolaka":[28719,96.8],"Konawe Selatan":[12075,392.6],"Konawe Utara":[25000,162.7],"Wakatobi":[15000,169.9]}}],"friksi":[{"k":"Gula Pasir","w":-6.35,"pi":1.0,"adf":0.3921,"kpss":0.021,"hrg":18191},{"k":"Beras","w":6.13,"pi":1.0,"adf":0.0709,"kpss":0.1,"hrg":13219},{"k":"Daging Sapi","w":-3.46,"pi":0.73,"adf":0.0653,"kpss":0.01,"hrg":131934},{"k":"Minyak Goreng","w":-11.84,"pi":0.522,"adf":0.3364,"kpss":0.1,"hrg":20415},{"k":"Bawang Putih","w":4.51,"pi":0.449,"adf":0.0002,"kpss":0.1,"hrg":42211},{"k":"Cabai Rawit","w":12.92,"pi":0.171,"adf":0.0,"kpss":0.1,"hrg":57623},{"k":"Telur Ayam","w":-2.13,"pi":0.03,"adf":0.0,"kpss":0.036,"hrg":29343},{"k":"Daging Ayam","w":2.05,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":34776},{"k":"Cabai Merah","w":-1.73,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":44914},{"k":"Bawang Merah","w":2.42,"pi":0.0,"adf":0.0,"kpss":0.1,"hrg":43110}]};
 
 /* ---------- pembantu format ---------- */
-const nf = (x, d = 0) => new Intl.NumberFormat("id-ID",
-  { minimumFractionDigits: d, maximumFractionDigits: d }).format(x);
+const nf = (x, d = 0) => { const v = Number(x); return new Intl.NumberFormat("id-ID",
+  { minimumFractionDigits: d, maximumFractionDigits: d }).format(Number.isFinite(v) ? (+v.toFixed(d) || 0) : v); };
 const rp = (x) => "Rp" + nf(Math.round(x));
 const pct = (x, d = 1) => nf(x, d) + " persen";
 const el = (s) => document.querySelector(s);
@@ -683,7 +715,7 @@ const buat = (t, a = {}) => {
 /* ---------- keadaan ---------- */
 const K = {
   penerima: 704066, hari: 246, frek: 0.30, gram: 100,
-  phi: 0.025, harga: 26262, ambang: 0.50,
+  phi: 0.020, harga: 26239, ambang: 0.50,
   ikanTerpilih: null, lembar: 0,
 };
 
@@ -2202,10 +2234,10 @@ function setelKe(nilai) {
   perbarui();
 }
 el("#btnNaskah").addEventListener("click", () => setelKe({
-  penerima: 704066, hari: 246, frek: 0.30, gram: 100, phi: 0.025, harga: 26262, ambang: 0.50,
+  penerima: 704066, hari: 246, frek: 0.30, gram: 100, phi: 0.020, harga: 26239, ambang: 0.50,
 }));
 el("#btnMaritim").addEventListener("click", () => setelKe({
-  penerima: 704066, hari: 252, frek: 0.50, gram: 108, phi: 0.05, harga: 26262, ambang: 0.50,
+  penerima: 704066, hari: 252, frek: 0.50, gram: 108, phi: 0.05, harga: 26239, ambang: 0.50,
 }));
 
 // tab
